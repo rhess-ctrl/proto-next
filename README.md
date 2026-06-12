@@ -9,6 +9,10 @@ Next.js prototype with shadcn/ui + Tailwind CSS v4, deployed to GCP Cloud Run.
 - **Runtime**: Node 24 / pnpm
 - **Deploy**: GCP Cloud Run via Cloud Build
 
+## Live
+
+https://proto-next-gz74xlyiqa-uc.a.run.app
+
 ## Local development
 
 ```bash

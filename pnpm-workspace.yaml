@@ -1,14 +1,2 @@
-allowBuild: unrs-resolver
-allowBuilds:
-  '-': true
-  e: true
-  l: true
-  n: true
-  o: true
-  r: true
-  s: true
-  u: true
-  v: true
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
+packages:
+  - "."

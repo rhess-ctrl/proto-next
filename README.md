@@ -54,6 +54,13 @@ fail at container startup.
 
 ### pnpm 11 build approvals for `sharp` and `unrs-resolver`
 
-pnpm 11 blocks native build scripts by default. The `pnpm.yaml` at the repo root
-opts these two packages back in via `onlyBuiltDependencies`. Note: the `pnpm` field
-inside `package.json` no longer works in pnpm 11 — it must be in `pnpm.yaml`.
+pnpm 11 blocks native build scripts by default. In Docker/Cloud Build, `pnpm-workspace.yaml`
+and `.npmrc` approaches don't reliably suppress the error. The confirmed fix is
+`--ignore-scripts` in the Docker deps stage — `sharp` falls back to Next.js's built-in
+squoosh optimizer, which is fine for a POC.
+
+### `--allow-unauthenticated` alone is not enough on new GCP projects
+
+Cloud Run's `--allow-unauthenticated` deploy flag does not set the IAM policy on new
+projects where the default is deny-all. The `roles/run.invoker` binding for `allUsers`
+must also be set explicitly. `cloudbuild.yaml` handles this as a dedicated deploy step.

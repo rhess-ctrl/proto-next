@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
+import { getItems } from "@/lib/items";
 
-export default function Home() {
+export default async function Home() {
+  const items = await getItems();
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-background p-8">
       <div className="text-center space-y-2">
@@ -18,8 +21,24 @@ export default function Home() {
         <Button className="w-full sm:w-auto" variant="destructive">Destructive</Button>
       </div>
 
+      <div className="w-full max-w-lg space-y-3">
+        <h2 className="text-xl font-semibold">Items</h2>
+        {items.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No items found.</p>
+        ) : (
+          <ul className="divide-y divide-border rounded-lg border">
+            {items.map((item) => (
+              <li key={item.id} className="px-4 py-3">
+                <p className="font-medium">{item.name}</p>
+                <p className="text-sm text-muted-foreground">{item.description}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <p className="text-sm text-muted-foreground">
-        shadcn/ui <code className="font-mono bg-muted px-1 py-0.5 rounded">Button</code> variants — stack is wired up.
+        Data via <code className="font-mono bg-muted px-1 py-0.5 rounded">/api/items</code> · Firestore
       </p>
     </main>
   );

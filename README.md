@@ -43,3 +43,17 @@ gcloud builds submit --config cloudbuild.yaml \
 ```
 
 Or connect the repo to Cloud Build for automatic deploys on push to `main`.
+
+## Known gotchas
+
+### `output: "standalone"` is required for Cloud Run
+
+`next.config.ts` must have `output: "standalone"`. Without it, Next.js won't emit
+`server.js` into `.next/standalone/` and the Docker `CMD ["node", "server.js"]` will
+fail at container startup.
+
+### pnpm 11 build approvals for `sharp` and `unrs-resolver`
+
+pnpm 11 blocks native build scripts by default. The `pnpm.yaml` at the repo root
+opts these two packages back in via `onlyBuiltDependencies`. Note: the `pnpm` field
+inside `package.json` no longer works in pnpm 11 — it must be in `pnpm.yaml`.

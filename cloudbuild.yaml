@@ -32,17 +32,6 @@ steps:
       - --allow-unauthenticated
       - --port=3000
 
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    entrypoint: gcloud
-    args:
-      - run
-      - services
-      - add-iam-policy-binding
-      - ${_SERVICE}
-      - --region=${_REGION}
-      - --member=allUsers
-      - --role=roles/run.invoker
-
 images:
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:${_TAG}
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:latest

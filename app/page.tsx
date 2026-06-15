@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getItems } from "@/lib/items";
 
@@ -13,6 +14,10 @@ export default async function Home() {
         <p className="text-muted-foreground text-lg">
           Next.js · shadcn/ui · Tailwind CSS · GCP Cloud Run
         </p>
+        <nav className="flex justify-center gap-4 pt-1 text-sm">
+          <Link href="/" className="text-foreground font-medium">Home</Link>
+          <Link href="/about" className="text-muted-foreground hover:text-foreground transition-colors">About</Link>
+        </nav>
       </div>
 
       <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 w-full max-w-sm sm:max-w-none">
@@ -30,9 +35,14 @@ export default async function Home() {
         ) : (
           <ul className="divide-y divide-border rounded-lg border">
             {items.map((item) => (
-              <li key={item.id} className="px-4 py-3">
-                <p className="font-medium">{item.name}</p>
-                <p className="text-sm text-muted-foreground">{item.description}</p>
+              <li key={item.id}>
+                <Link
+                  href={`/items/${item.id}`}
+                  className="block px-4 py-3 hover:bg-muted/50 transition-colors"
+                >
+                  <p className="font-medium">{item.name}</p>
+                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                </Link>
               </li>
             ))}
           </ul>

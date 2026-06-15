@@ -14,3 +14,13 @@ export async function getItems(): Promise<Item[]> {
     description: doc.data().description as string,
   }));
 }
+
+export async function getItem(id: string): Promise<Item | null> {
+  const doc = await db.collection("items").doc(id).get();
+  if (!doc.exists) return null;
+  return {
+    id: doc.id,
+    name: doc.data()!.name as string,
+    description: doc.data()!.description as string,
+  };
+}

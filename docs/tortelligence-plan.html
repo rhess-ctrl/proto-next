@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tortelligence — Next.js Implementation Plan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #001428;
+    --panel: #001E34;
+    --trough: #000A16;
+    --cyan: #27BAEC;
+    --cyan-dim: rgba(39,186,236,0.12);
+    --cyan-border: rgba(39,186,236,0.28);
+    --gold: #C9962A;
+    --gold-dim: rgba(201,150,42,0.12);
+    --gold-border: rgba(201,150,42,0.28);
+    --green: #1FC98E;
+    --green-dim: rgba(31,201,142,0.12);
+    --rule: rgba(255,255,255,0.07);
+    --rule-hi: rgba(255,255,255,0.12);
+    --text: rgba(255,255,255,0.90);
+    --text-muted: rgba(255,255,255,0.55);
+    --text-faint: rgba(255,255,255,0.35);
+    --font-display: "Arial Narrow", "Impact", system-ui, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  body {
+    background: var(--navy);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13.5px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 0 60px;
+  }
+  /* Header */
+  .page-header {
+    background: var(--trough);
+    border-bottom: 1px solid var(--rule-hi);
+    padding: 22px 40px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .logo-mark {
+    width: 24px; height: 28px;
+    color: var(--cyan);
+  }
+  .logo-text {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--cyan);
+  }
+  /* Layout */
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 40px 40px 0; }
+  /* Section */
+  .section { margin-bottom: 48px; }
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .section-head h2 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .section-head .rule { flex: 1; height: 1px; background: var(--rule-hi); }
+  .section-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--cyan);
+    letter-spacing: 1.5px;
+    flex-shrink: 0;
+  }
+  /* Cards */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--rule-hi);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 8px;
+  }
+  .card p { color: var(--text-muted); font-size: 13px; line-height: 1.65; margin-bottom: 8px; }
+  .card p:last-child { margin-bottom: 0; }
+  /* Grid */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 700px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+  /* Chips */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border-radius: 4px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+  .chip-cyan  { background: var(--cyan-dim);  border: 1px solid var(--cyan-border);  color: var(--cyan); }
+  .chip-gold  { background: var(--gold-dim);  border: 1px solid var(--gold-border);  color: var(--gold); }
+  .chip-green { background: var(--green-dim); border: 1px solid rgba(31,201,142,0.28); color: var(--green); }
+  .chip-muted { background: rgba(255,255,255,0.06); border: 1px solid var(--rule-hi); color: var(--text-muted); }
+  /* Phase cards */
+  .phase {
+    border-left: 3px solid var(--cyan);
+    background: var(--panel);
+    border-radius: 0 10px 10px 0;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 0 18px;
+  }
+  .phase.gold { border-left-color: var(--gold); }
+  .phase.green { border-left-color: var(--green); }
+  .phase-num {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    color: var(--cyan);
+    line-height: 1;
+    padding-top: 3px;
+  }
+  .phase.gold .phase-num { color: var(--gold); }
+  .phase.green .phase-num { color: var(--green); }
+  .phase-title {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .phase-body { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; }
+  /* Code */
+  code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--rule-hi);
+    border-radius: 3px;
+    padding: 1px 5px;
+    color: var(--cyan);
+  }
+  pre {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    background: #000A16;
+    border: 1px solid var(--rule-hi);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.75);
+    margin: 10px 0;
+  }
+  pre .k { color: var(--cyan); }
+  pre .s { color: #A7E2F7; }
+  pre .c { color: rgba(255,255,255,0.32); font-style: italic; }
+  pre .t { color: var(--gold); }
+  /* Table */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
+  .tbl th { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-faint); padding: 6px 12px; text-align: left; border-bottom: 1px solid var(--rule-hi); }
+  .tbl td { padding: 9px 12px; border-bottom: 1px solid var(--rule); color: var(--text-muted); vertical-align: top; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl td:first-child { color: #fff; font-family: var(--font-mono); font-size: 11px; }
+  .overflow { overflow-x: auto; }
+  /* Components list */
+  .comp-list { display: flex; flex-direction: column; gap: 6px; }
+  .comp-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .comp-name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #fff;
+    min-width: 200px;
+    flex-shrink: 0;
+  }
+  .comp-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .comp-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+  /* Status dot */
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; flex-shrink: 0; margin-top: 4px; }
+  .dot-cyan { background: var(--cyan); }
+  .dot-gold { background: var(--gold); }
+  .dot-green { background: var(--green); }
+  /* File tree */
+  .tree {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    background: #000A16;
+    border: 1px solid var(--rule-hi);
+    border-radius: 8px;
+    padding: 16px 18px;
+    line-height: 1.9;
+    color: rgba(255,255,255,0.65);
+  }
+  .tree .dir { color: var(--cyan); }
+  .tree .new { color: var(--green); }
+  .tree .exists { color: var(--text-muted); }
+  .tree .comment { color: rgba(255,255,255,0.28); }
+  /* Note banner */
+  .note {
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12.5px;
+    color: rgba(255,220,100,0.85);
+    margin: 12px 0;
+  }
+  .note strong { color: var(--gold); }
+  ul { padding-left: 18px; }
+  ul li { color: var(--text-muted); font-size: 13px; margin-bottom: 4px; }
+  ul li code { font-size: 10.5px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="logo">
+    <svg class="logo-mark" viewBox="0 0 120 140" fill="none">
+      <path d="M60 6 C60 6 60 18 71 18 L104 18 C108 18 110 21 110 25 L110 64 C110 99 88 122 60 134 C32 122 10 99 10 64 L10 25 C10 21 12 18 16 18 L49 18 C60 18 60 6 60 6 Z" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"/>
+    </svg>
+    <span class="logo-text">Tortelligence</span>
+  </div>
+  <div style="width:1px;height:32px;background:rgba(255,255,255,0.12);margin:0 6px;"></div>
+  <div>
+    <div class="page-title">Next.js Implementation Plan</div>
+    <div class="eyebrow" style="margin-top:4px;">mock → production · shadcn + tailwind v4 + zustand</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- WHAT THE MOCK SHOWS -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">00</span>
+      <h2>What the mock contains</h2>
+      <div class="rule"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Two surfaces</div>
+        <p><strong style="color:#fff;">S1 · Internal — Summary + Feed</strong><br>Module health tiles (4 modules) at the top, then a filterable, ranked opportunity feed below. Clicking a module tile filters the feed.</p>
+        <p><strong style="color:#fff;">S2 · Client — Single-module view</strong><br>Firm-facing, scoped to one module (Pharma). Branded masthead, description copy, feature-density opportunity cards.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Design system</div>
+        <p>Full set of CSS custom properties: navy surface scale (abyss → panel → raised → well → trough), cyan primary, gold secondary, green/rose score semantics.</p>
+        <p>Three fonts: <strong style="color:#fff;">Oswald</strong> (display/headings), <strong style="color:#fff;">Open Sans</strong> (body), <strong style="color:#fff;">DM Mono</strong> (labels, metrics). 4px spacing grid. Restrained radius scale.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:0;">
+      <div class="card-title">Four data models</div>
+      <div class="overflow">
+        <table class="tbl">
+          <thead><tr><th>Object</th><th>Fields</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Opportunity</td><td>id, module, label, injury, defendant, year, score, reportVolume, severityRate, velocity {pct, series[]}, sub {disproportionality, volume, severity, velocity}</td><td>Core domain entity</td></tr>
+            <tr><td>Module</td><td>key, num, short, label, icon, color, reportUnit</td><td>4 modules: pharma, device, consumer, institutional</td></tr>
+            <tr><td>SubScoreInfo</td><td>keyed by module → sub-score key → tooltip string</td><td>Plain-English ⓘ explanations</td></tr>
+            <tr><td>SolvencyState</td><td>Solvent | At-Risk | Private | Unknown</td><td>Per-opportunity, placeholder not yet built</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPO STATE -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <h2>Current repo state</h2>
+      <div class="rule"></div>
+    </div>
+
+    <div class="grid3">
+      <div class="card">
+        <div class="card-title">Already installed</div>
+        <ul>
+          <li>Next.js 16 App Router</li>
+          <li>React 19 / TypeScript 5</li>
+          <li>Tailwind v4 + PostCSS</li>
+          <li>shadcn/ui (base-nova style)</li>
+          <li>lucide-react (icons)</li>
+          <li>@base-ui/react (headless)</li>
+          <li>clsx, tailwind-merge, cva</li>
+          <li>tw-animate-css</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Only one shadcn component</div>
+        <p><code>components/ui/button.tsx</code> — this is the only shadcn component added so far. Aliases are configured (<code>@/components</code>, <code>@/lib</code>, <code>@/hooks</code>).</p>
+        <p style="margin-top:8px;">The <code>hooks/</code> directory doesn't exist yet but the alias is already wired up.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Missing for this work</div>
+        <ul>
+          <li><strong style="color:#fff;">Zustand</strong> — not installed</li>
+          <li>Additional shadcn components (Input, Tooltip, Badge…)</li>
+          <li>Google Fonts config (Oswald, Open Sans, DM Mono)</li>
+          <li>Tortelligence design tokens in Tailwind</li>
+          <li>Any app pages beyond the stub</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT TO INSTALL -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <h2>What to install / add</h2>
+      <div class="rule"></div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <div class="card">
+          <div class="card-title">npm packages</div>
+          <pre><span class="k">pnpm add</span> zustand
+<span class="c"># that's it for runtime deps</span></pre>
+          <p>Everything else (fonts, icons, Tailwind) is already present. Zustand is the only missing runtime dependency.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">shadcn components to add</div>
+          <pre><span class="k">pnpm dlx shadcn@latest add</span> input
+<span class="k">pnpm dlx shadcn@latest add</span> tooltip
+<span class="k">pnpm dlx shadcn@latest add</span> badge
+<span class="k">pnpm dlx shadcn@latest add</span> separator</pre>
+          <p>Input → search bars. Tooltip → InfoDot popover. Badge → score chips. Separator → ruled section dividers.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title">Font setup (next/font/google)</div>
+          <pre><span class="c">// app/layout.tsx</span>
+<span class="k">import</span> { Oswald, Open_Sans, DM_Mono } <span class="k">from</span> <span class="s">"next/font/google"</span>
+
+<span class="k">const</span> oswald = Oswald({
+  subsets: [<span class="s">"latin"</span>],
+  weight: [<span class="s">"400"</span>,<span class="s">"500"</span>,<span class="s">"600"</span>,<span class="s">"700"</span>],
+  variable: <span class="s">"--font-display"</span>
+})
+<span class="k">const</span> openSans = Open_Sans({
+  subsets: [<span class="s">"latin"</span>],
+  variable: <span class="s">"--font-sans"</span>
+})
+<span class="k">const</span> dmMono = DM_Mono({
+  subsets: [<span class="s">"latin"</span>],
+  weight: [<span class="s">"400"</span>,<span class="s">"500"</span>],
+  variable: <span class="s">"--font-mono"</span>
+})</pre>
+        </div>
+        <div class="card">
+          <div class="card-title">Design tokens in globals.css</div>
+          <p>Tailwind v4 uses <code>@theme</code> blocks to expose CSS variables as utilities. Add the Tortelligence color + spacing tokens to <code>globals.css</code> so classes like <code>bg-navy-panel</code>, <code>text-cyan</code>, <code>border-rule</code> work throughout.</p>
+          <pre><span class="c">/* globals.css */</span>
+<span class="k">@theme</span> {
+  --color-navy-abyss: #03090F;
+  --color-navy-field: #001428;
+  --color-navy-panel: #001E34;
+  --color-cyan: #27BAEC;
+  --color-gold: #C9962A;
+  <span class="c">/* … etc */</span>
+}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPONENT BREAKDOWN -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <h2>Component breakdown</h2>
+      <div class="rule"></div>
+    </div>
+
+    <div class="note"><strong>Architecture rule:</strong> Per ADR-00X, all components are stateless renderers — they receive data via props or feature hooks and emit intent through named store actions. No business logic or shared state lives in component bodies.</div>
+
+    <div style="margin-top:16px;">
+      <div class="eyebrow" style="margin-bottom:10px;">Primitive components — no dependencies on store or other UI components</div>
+      <div class="comp-list">
+        <div class="comp-item">
+          <span class="dot dot-cyan"></span>
+          <div class="comp-name">Spark</div>
+          <div><div class="comp-desc">SVG sparkline for 90-day velocity trend. Props: series[], color, w, h, fill. Pure computation, no state.</div><div class="comp-tags"><span class="chip chip-muted">custom SVG</span><span class="chip chip-cyan">pure</span></div></div>
+        </div>
+        <div class="comp-item">
+          <span class="dot dot-cyan"></span>
+          <div class="comp-name">ScoreNumber</div>
+          <div><div class="comp-desc">Large mono score display (42px default). Color driven by <code>bandColor(score)</code> utility. Props: score, size.</div><div class="comp-tags"><span class="chip chip-cyan">pure</span></div></div>
+        </div>
+        <div class="comp-item">
+          <span class="dot dot-cyan"></span>
+          <div class="comp-name">ScoreBadge</div>
+          <div><div class="comp-desc">Compact badge variant of ScoreNumber for feature-density cards. Comes from the design system namespace in the mock.</div><div class="comp-tags"><span class="chip chip-cyan">pure</span></div></div>
+        </div>
+        <div class="comp-item">
+          <span class="dot dot-cyan"></span>
+          <div class="comp-name">ModuleBadge</div>
+          <div><div class="comp-desc">Icon tile + mono "01 PHARMA" label. Three sizes: sm | md | lg. Props: module key, size.</div><div class="comp-tags"><span class="chip chip-cyan">pure</span><span class="chip chip-muted">lucide icon</span></div></div>
+        </div>
+        <div class="comp-item">
+          <span class="dot dot-cyan"></span>
+          <div class="comp-name">VelocityPill</div>
+          <div><div class="comp-desc">Trending-up icon + "+N%" in green mono. Props: velocity.pct, big?.</div><div class="comp-tags"><span class="chip chip-cyan">pure</span><span class="chip chip-muted">lucide icon</span></div></div>
+        </div>
+        <div class="comp-item">
+          <span class="dot dot-cyan"></span>
+          <div class="comp-name">Stat</div>
+          <div><div class="comp-desc">Labeled stat cell (mono label above, mono value below). Props: label, value, color, align.</div><div class="comp-tags"><span class="chip chip-cyan">pure</span></div></div>
+        </div>
+        <div class="comp-item">
+          <span class="dot dot-gold"></span>
+          <div class="comp-name">InfoDot</div>
+          <div><div class="comp-desc">ⓘ circle that opens a tooltip with plain-English explanation. Use shadcn Tooltip (Radix-based) instead of the custom portal approach in the mock — gets viewport clamping for free.</div><div class="comp-tags"><span class="chip chip-gold">shadcn Tooltip</span><span class="chip chip-muted">client</span></div></div>
+        </div>
+        <div class="comp-item">
+          <span class="dot dot-cyan"></span>
+          <div class="comp-name">SolvencyChip</div>
+          <div><div class="comp-desc">Defendant solvency indicator. Two variants: card (compact right-aligned) and tile (expanded with note). States: Solvent | At-Risk | Private | Unknown.</div><div class="comp-tags"><span class="chip chip-muted">placeholder data</span></div></div>
+        </div>
+      </div>
+
+      <div class="eyebrow" style="margin-top:20px;margin-bottom:10px;">Composite components — built from primitives above</div>
+      <div class="comp-list">
+        <div class="comp-item">
+          <span class="dot dot-cyan"></span>
+          <div class="comp-name">SubBar</div>
+          <div><div class="comp-desc">Score sub-component bar (label + InfoDot + score + progress bar). Four instances per EvidenceLayer: Disproportionality, Volume, Severity, Velocity.</div><div class="comp-tags"><span class="chip chip-cyan">pure</span></div></div>
+        </div>
+        <div class="comp-item">
+          <span class="dot dot-cyan"></span>
+          <div class="comp-name">EvidenceLayer</div>
+          <div><div class="comp-desc">Expands inline within OppCard. 2-column: left = score breakdown (4×SubBar), right = trend + stats + solvency tile. Two modes: internal | client.</div><div class="comp-tags"><span class="chip chip-cyan">pure</span></div></div>
+        </div>
+        <div class="comp-item">
+          <span class="dot dot-gold"></span>
+          <div class="comp-name">OppCard</div>
+          <div><div class="comp-desc">The main opportunity row. Two densities: <strong style="color:#fff;">comfortable</strong> (internal feed — compact row with rank + score + module + stats) and <strong style="color:#fff;">feature</strong> (client — taller with ScoreBadge + full label). Renders EvidenceLayer when expanded. Toggle state lives in Zustand store.</div><div class="comp-tags"><span class="chip chip-gold">store-connected</span><span class="chip chip-muted">client</span></div></div>
+        </div>
+        <div class="comp-item">
+          <span class="dot dot-gold"></span>
+          <div class="comp-name">SummaryTile</div>
+          <div><div class="comp-desc">Module health card: icon + name, top score, sparkline, opp count, avg velocity. Active state when its module is the current filter. Click emits <code>setModule</code> action.</div><div class="comp-tags"><span class="chip chip-gold">store-connected</span><span class="chip chip-muted">client</span></div></div>
+        </div>
+      </div>
+
+      <div class="eyebrow" style="margin-top:20px;margin-bottom:10px;">Layout / shell components</div>
+      <div class="comp-list">
+        <div class="comp-item">
+          <span class="dot dot-cyan"></span>
+          <div class="comp-name">Sidebar</div>
+          <div><div class="comp-desc">224px trough-colored sidebar. Logo, 5 placeholder nav items (dashed borders), bottom account placeholder. Intentionally non-functional per mock spec.</div><div class="comp-tags"><span class="chip chip-cyan">pure</span><span class="chip chip-muted">placeholder nav</span></div></div>
+        </div>
+        <div class="comp-item">
+          <span class="dot dot-gold"></span>
+          <div class="comp-name">TopBar</div>
+          <div><div class="comp-desc">Title + subtitle, search Input (shadcn), ranked count, bell icon. Search value flows through Zustand store — TopBar emits <code>setQuery</code> action.</div><div class="comp-tags"><span class="chip chip-gold">store-connected</span><span class="chip chip-muted">shadcn Input</span></div></div>
+        </div>
+        <div class="comp-item">
+          <span class="dot dot-cyan"></span>
+          <div class="comp-name">SurfaceSwitcher</div>
+          <div><div class="comp-desc">60px top strip with Internal / Client tab groups. Active tab styled by group (cyan tint vs gold tint). Persists last-selected surface.</div><div class="comp-tags"><span class="chip chip-gold">store-connected</span><span class="chip chip-muted">client</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZUSTAND STORES -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <h2>Zustand stores</h2>
+      <div class="rule"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">opportunity-store.ts</div>
+        <pre><span class="t">type</span> OpportunityState = {
+  expandedId:    <span class="t">string</span> | <span class="k">null</span>
+  activeModule:  <span class="t">string</span> | <span class="k">null</span>  <span class="c">// "all" or module key</span>
+  query:         <span class="t">string</span>
+}
+<span class="t">type</span> OpportunityActions = {
+  setExpanded:   (id: <span class="t">string</span> | <span class="k">null</span>) => <span class="k">void</span>
+  setModule:     (m: <span class="t">string</span> | <span class="k">null</span>) => <span class="k">void</span>
+  setQuery:      (q: <span class="t">string</span>) => <span class="k">void</span>
+}</pre>
+        <p>Note: <code>opportunities[]</code> is <em>not</em> in this store — it's static seed data passed from the server layer or imported from a lib. The store owns only interactive UI state.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">surface-store.ts</div>
+        <pre><span class="t">type</span> SurfaceState = {
+  active: <span class="s">"internal"</span> | <span class="s">"client"</span>
+}
+<span class="t">type</span> SurfaceActions = {
+  setSurface: (s: SurfaceState[<span class="s">"active"</span>]) => <span class="k">void</span>
+}</pre>
+        <p>Uses Zustand <code>persist</code> middleware to survive page reloads (localStorage key <code>"tortelligence.surface"</code>, version 1). This is the durable preference case from the TS standard.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Feature hooks (per TS-00X §Interaction Model)</div>
+      <p>Components don't import stores directly — they use thin feature hooks that select minimal state and expose typed callbacks:</p>
+      <pre><span class="c">// hooks/use-opportunity-view.ts</span>
+<span class="k">export function</span> useOpportunityView() {
+  <span class="k">const</span> { expandedId, activeModule, query } = useOpportunityStore(<span class="k">s</span> => s.state)
+  <span class="k">const</span> { setExpanded, setModule, setQuery }  = useOpportunityStore(<span class="k">s</span> => s.actions)
+  <span class="k">const</span> filtered = useMemo(() => <span class="c">/* filter + sort */</span>, [activeModule, query])
+  <span class="k">return</span> { filtered, expandedId, activeModule, query, setExpanded, setModule, setQuery }
+}</pre>
+    </div>
+  </div>
+
+  <!-- FILE STRUCTURE -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <h2>Target file structure</h2>
+      <div class="rule"></div>
+    </div>
+
+    <div class="tree">
+<span class="dir">app/</span>
+  <span class="exists">layout.tsx</span>           <span class="comment">← add Oswald/OpenSans/DMMono font vars</span>
+  <span class="exists">globals.css</span>          <span class="comment">← add Tortelligence @theme tokens</span>
+  <span class="new">dashboard/</span>
+    <span class="new">page.tsx</span>             <span class="comment">← internal surface (SummaryFeed)</span>
+  <span class="new">client/</span>
+    <span class="new">page.tsx</span>             <span class="comment">← client view (ClientView)</span>
+  <span class="exists">page.tsx</span>             <span class="comment">← redirect to /dashboard</span>
+
+<span class="dir">components/</span>
+  <span class="exists">ui/</span>                  <span class="comment">← shadcn — button + new ones</span>
+    <span class="exists">button.tsx</span>
+    <span class="new">input.tsx</span>
+    <span class="new">tooltip.tsx</span>
+    <span class="new">badge.tsx</span>
+    <span class="new">separator.tsx</span>
+  <span class="new">tortelligence/</span>       <span class="comment">← domain components</span>
+    <span class="new">spark.tsx</span>
+    <span class="new">score-number.tsx</span>
+    <span class="new">score-badge.tsx</span>
+    <span class="new">module-badge.tsx</span>
+    <span class="new">velocity-pill.tsx</span>
+    <span class="new">stat.tsx</span>
+    <span class="new">info-dot.tsx</span>
+    <span class="new">solvency-chip.tsx</span>
+    <span class="new">sub-bar.tsx</span>
+    <span class="new">evidence-layer.tsx</span>
+    <span class="new">opp-card.tsx</span>
+    <span class="new">summary-tile.tsx</span>
+    <span class="new">sidebar.tsx</span>
+    <span class="new">top-bar.tsx</span>
+    <span class="new">surface-switcher.tsx</span>
+    <span class="new">summary-feed.tsx</span>     <span class="comment">← S1 view</span>
+    <span class="new">client-view.tsx</span>      <span class="comment">← S2 view</span>
+
+<span class="dir">store/</span>
+  <span class="new">opportunity-store.ts</span>
+  <span class="new">surface-store.ts</span>
+
+<span class="dir">hooks/</span>               <span class="comment">← alias already configured</span>
+  <span class="new">use-opportunity-view.ts</span>
+  <span class="new">use-surface.ts</span>
+
+<span class="dir">lib/</span>
+  <span class="new">opportunities.ts</span>     <span class="comment">← types + seed data (HP_OPPS, HP_MODULES, etc.)</span>
+  <span class="new">band-color.ts</span>        <span class="comment">← score → CSS color utility</span>
+  <span class="exists">utils.ts</span>
+  <span class="exists">firestore.ts</span>
+  <span class="exists">items.ts</span>
+    </div>
+  </div>
+
+  <!-- IMPLEMENTATION ORDER -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">06</span>
+      <h2>Implementation order</h2>
+      <div class="rule"></div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">1</div>
+      <div>
+        <div class="phase-title">Foundation</div>
+        <div class="phase-body">
+          Install Zustand. Add shadcn Input + Tooltip + Badge + Separator. Configure <code>next/font/google</code> in <code>layout.tsx</code> for Oswald, Open Sans, DM Mono. Add Tortelligence CSS custom properties + <code>@theme</code> token block to <code>globals.css</code>. Extract <code>lib/opportunities.ts</code> (types + seed data from the mock). Add <code>lib/band-color.ts</code>.
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">2</div>
+      <div>
+        <div class="phase-title">Primitive components</div>
+        <div class="phase-body">
+          Build bottom-up: Spark → ScoreNumber → ScoreBadge → ModuleBadge → VelocityPill → Stat → SolvencyChip → InfoDot (using shadcn Tooltip). All are pure — no store imports, no <code>useState</code>. These are the building blocks for everything above.
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">3</div>
+      <div>
+        <div class="phase-title">Zustand stores + feature hooks</div>
+        <div class="phase-body">
+          Define <code>opportunity-store.ts</code> and <code>surface-store.ts</code> with the <code>state</code> + <code>actions</code> contract from TS-00X. Wire <code>surface-store</code> with Zustand <code>persist</code> (localStorage). Build <code>use-opportunity-view.ts</code> and <code>use-surface.ts</code> hooks. No components yet — validate store shape in isolation.
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">4</div>
+      <div>
+        <div class="phase-title">Composite + layout components</div>
+        <div class="phase-body">
+          SubBar → EvidenceLayer → OppCard (both densities) → SummaryTile. Then: Sidebar → TopBar (wired to store via hook) → SurfaceSwitcher. OppCard calls <code>onToggle</code> which maps to <code>setExpanded</code> in the hook — the card itself is a stateless renderer.
+        </div>
+      </div>
+    </div>
+
+    <div class="phase gold">
+      <div class="phase-num">5</div>
+      <div>
+        <div class="phase-title">Views + pages</div>
+        <div class="phase-body">
+          Build <code>SummaryFeed</code> (S1) and <code>ClientView</code> (S2) as view-level components using the hooks and components from phases 2–4. Wire into <code>app/dashboard/page.tsx</code> and <code>app/client/page.tsx</code>. Add a <code>SurfaceSwitcher</code> at the root layout level or as a shared top strip.
+        </div>
+      </div>
+    </div>
+
+    <div class="phase green">
+      <div class="phase-num">6</div>
+      <div>
+        <div class="phase-title">Polish + verification</div>
+        <div class="phase-body">
+          Run <code>pnpm dev</code> and compare each surface against the mock side-by-side. Verify: expand/collapse on OppCard, module filter on SummaryTile, search filtering, surface switcher persistence, font rendering (Oswald caps, DM Mono metrics), score color bands, responsive overflow on narrow viewports.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY DECISIONS -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">07</span>
+      <h2>Key decisions + tradeoffs</h2>
+      <div class="rule"></div>
+    </div>
+
+    <div class="overflow">
+      <table class="tbl">
+        <thead><tr><th>Decision</th><th>Chosen approach</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>InfoDot tooltip</td>
+            <td>shadcn Tooltip (Radix Portal)</td>
+            <td>The mock uses a custom ReactDOM.createPortal + viewport-clamp approach. shadcn Tooltip (Radix) handles portal + positioning out of the box with better a11y and no custom math.</td>
+          </tr>
+          <tr>
+            <td>Fonts</td>
+            <td>next/font/google</td>
+            <td>The mock bundles woff2 as base64 blobs. Next.js font optimization via next/font/google gives self-hosting, preloading, and zero layout shift — no manual woff2 management needed.</td>
+          </tr>
+          <tr>
+            <td>Design tokens</td>
+            <td>CSS custom properties + Tailwind v4 @theme</td>
+            <td>Tailwind v4 reads CSS custom properties natively. Defining tokens once in globals.css gives both CSS var access (for inline styles in complex components) and Tailwind utility class access.</td>
+          </tr>
+          <tr>
+            <td>Opportunity data</td>
+            <td>Static seed in lib/opportunities.ts</td>
+            <td>Mock uses window globals. In Next.js, a lib module is cleaner — server components can import it directly, client components via props or hooks. No Firestore needed for this data yet.</td>
+          </tr>
+          <tr>
+            <td>Server vs client</td>
+            <td>Page = server; interactive components = 'use client'</td>
+            <td>Page components (dashboard/page.tsx) can be server components that import static data and pass it down. Store-connected components (OppCard, TopBar, SummaryFeed) need 'use client'. This keeps RSC benefits at the route boundary.</td>
+          </tr>
+          <tr>
+            <td>Sparkline chart</td>
+            <td>Custom SVG — no library</td>
+            <td>The spark is a simple polyline over a series array — 25 lines of SVG. Bringing in recharts or a chart library for this would be overkill and adds bundle weight.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

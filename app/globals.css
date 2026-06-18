@@ -7,9 +7,49 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  /* Tortelligence fonts — variables set by next/font in layout.tsx */
+  --font-display: var(--font-oswald);
+  --font-sans: var(--font-open-sans);
+  --font-mono: var(--font-dm-mono);
+  --font-heading: var(--font-display);
+  /* Tortelligence navy surface scale */
+  --color-navy-abyss:  #03090F;
+  --color-navy-field:  #001428;
+  --color-navy-panel:  #001E34;
+  --color-navy-raised: #062A45;
+  --color-navy-well:   #00101F;
+  --color-navy-trough: #000A16;
+  /* Tortelligence brand */
+  --color-brand-cyan:        #27BAEC;
+  --color-brand-cyan-bright: #54CEF7;
+  --color-brand-cyan-deep:   #0E84B0;
+  --color-brand-gold:        #C9962A;
+  --color-brand-gold-bright: #E0AE3E;
+  --color-brand-navy:        #001E34;
+  --color-brand-gray:        #8A9099;
+  /* Tortelligence cyan scale */
+  --color-cyan-100: #D6F1FB;
+  --color-cyan-200: #A7E2F7;
+  --color-cyan-300: #6FCFF2;
+  --color-cyan-400: #54CEF7;
+  --color-cyan-500: #27BAEC;
+  --color-cyan-600: #0E84B0;
+  --color-cyan-700: #0A6285;
+  /* Tortelligence gold scale */
+  --color-gold-300: #ECCB78;
+  --color-gold-400: #E0AE3E;
+  --color-gold-500: #C9962A;
+  --color-gold-600: #9E741E;
+  /* Tortelligence score semantics */
+  --color-score-strong:   #1FC98E;
+  --color-score-good:     #27BAEC;
+  --color-score-moderate: #E0AE3E;
+  --color-score-weak:     #F26B5E;
+  --color-score-flagged:  #FF5A6E;
+  /* Tortelligence device module color */
+  --color-module-device:        #7E8BF5;
+  --color-module-consumer:      #E0A93C;
+  --color-module-institutional: #B57BE8;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -117,14 +157,143 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ============================================================
+   Tortelligence design system tokens
+   ============================================================ */
+:root {
+  /* Navy surface scale */
+  --navy-abyss:  #03090F;
+  --navy-field:  #001428;
+  --navy-panel:  #001E34;
+  --navy-raised: #062A45;
+  --navy-well:   #00101F;
+  --navy-trough: #000A16;
+
+  /* Brand */
+  --brand-cyan:        #27BAEC;
+  --brand-cyan-bright: #54CEF7;
+  --brand-cyan-deep:   #0E84B0;
+  --brand-gold:        #C9962A;
+  --brand-gold-bright: #E0AE3E;
+
+  /* Cyan scale */
+  --cyan-100: #D6F1FB;
+  --cyan-200: #A7E2F7;
+  --cyan-300: #6FCFF2;
+  --cyan-400: #54CEF7;
+  --cyan-500: #27BAEC;
+  --cyan-600: #0E84B0;
+  --cyan-700: #0A6285;
+
+  /* Gold scale */
+  --gold-300: #ECCB78;
+  --gold-400: #E0AE3E;
+  --gold-500: #C9962A;
+  --gold-600: #9E741E;
+
+  /* Text on dark */
+  --text-strong:   #FFFFFF;
+  --text-body:     rgba(255,255,255,0.90);
+  --text-muted-hi: rgba(255,255,255,0.75);
+  --text-muted:    rgba(255,255,255,0.55);
+  --text-faint:    rgba(255,255,255,0.38);
+  --text-on-accent: #021A26;
+  --text-link: var(--cyan-400);
+
+  /* Borders / rules */
+  --rule:        rgba(255,255,255,0.07);
+  --rule-hi:     rgba(255,255,255,0.12);
+  --rule-strong: rgba(255,255,255,0.20);
+  --cyan-border: rgba(39,186,236,0.30);
+  --gold-border: rgba(201,150,42,0.30);
+
+  /* Tints */
+  --cyan-tint: rgba(39,186,236,0.09);
+  --cyan-glow: rgba(39,186,236,0.16);
+  --gold-tint: rgba(201,150,42,0.10);
+  --green-tint: rgba(31,201,142,0.12);
+  --rose-tint:  rgba(242,107,94,0.12);
+
+  /* Score semantics */
+  --score-strong:        #1FC98E;
+  --score-strong-dim:    rgba(31,201,142,0.14);
+  --score-good:          #27BAEC;
+  --score-good-dim:      rgba(39,186,236,0.14);
+  --score-moderate:      #E0AE3E;
+  --score-moderate-dim:  rgba(224,174,62,0.14);
+  --score-weak:          #F26B5E;
+  --score-weak-dim:      rgba(242,107,94,0.14);
+  --score-flagged:       #FF5A6E;
+  --score-flagged-dim:   rgba(255,90,110,0.13);
+
+  /* Semantic surface aliases */
+  --bg-app:          var(--navy-abyss);
+  --bg-page:         var(--navy-field);
+  --surface-panel:   var(--navy-panel);
+  --surface-card:    var(--navy-panel);
+  --surface-raised:  var(--navy-raised);
+  --surface-well:    var(--navy-well);
+  --surface-trough:  var(--navy-trough);
+  --surface-selected: #0E3653;
+
+  /* Radius */
+  --radius-xs:   3px;
+  --radius-sm:   5px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-full: 999px;
+
+  /* Shadows */
+  --shadow-sm:    0 1px 2px rgba(0,0,0,0.40);
+  --shadow-md:    0 6px 18px rgba(0,0,0,0.45);
+  --shadow-lg:    0 14px 40px rgba(0,0,0,0.55);
+  --shadow-pop:   0 20px 60px rgba(0,0,0,0.65);
+  --shadow-brief: 0 32px 96px rgba(0,0,0,0.75);
+  --glow-accent:  0 0 0 1px rgba(39,186,236,0.5), 0 0 24px rgba(39,186,236,0.20);
+  --inner-top:    inset 0 1px 0 rgba(255,255,255,0.04);
+
+  /* Card textures */
+  --card-pinstripe: repeating-linear-gradient(45deg, transparent, transparent 28px, rgba(255,255,255,0.018) 28px, rgba(255,255,255,0.018) 29px);
+  --card-top-glow:  radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.05) 0%, transparent 62%);
+
+  /* Layout */
+  --sidebar-w:   248px;
+  --rail-w:      64px;
+  --detail-w:    480px;
+  --content-max: 1320px;
+  --brief-max:   920px;
+
+  /* Motion */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:    120ms;
+  --dur-base:    200ms;
+  --dur-slow:    320ms;
+}
+
+@keyframes hp-fade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.18) transparent;
   }
+  *::-webkit-scrollbar { width: 9px; height: 9px; }
+  *::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 99px; }
+  *::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.24); }
   body {
-    @apply bg-background text-foreground;
+    background: var(--navy-abyss);
+    color: var(--text-body);
+    font-family: var(--font-open-sans), system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
   }
-  html {
-    @apply font-sans;
-  }
+  ::selection { background: rgba(39,186,236,0.30); color: #fff; }
+  :focus-visible { outline: 2px solid rgba(39,186,236,0.55); outline-offset: 2px; }
 }

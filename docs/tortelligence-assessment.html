@@ -1,0 +1,659 @@
+<title>Tortelligence — Architecture Assessment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:        #001428;
+    --panel:       #001E34;
+    --trough:      #000A16;
+    --raised:      #002240;
+    --cyan:        #27BAEC;
+    --cyan-dim:    rgba(39,186,236,0.10);
+    --cyan-border: rgba(39,186,236,0.26);
+    --gold:        #C9962A;
+    --gold-dim:    rgba(201,150,42,0.10);
+    --gold-border: rgba(201,150,42,0.26);
+    --green:       #1FC98E;
+    --green-dim:   rgba(31,201,142,0.10);
+    --green-border:rgba(31,201,142,0.26);
+    --red:         #E05252;
+    --red-dim:     rgba(224,82,82,0.10);
+    --red-border:  rgba(224,82,82,0.26);
+    --rule:        rgba(255,255,255,0.07);
+    --rule-hi:     rgba(255,255,255,0.12);
+    --text:        rgba(255,255,255,0.90);
+    --text-muted:  rgba(255,255,255,0.55);
+    --text-faint:  rgba(255,255,255,0.32);
+    --font-display:"Arial Narrow", "Impact", system-ui, sans-serif;
+    --font-mono:   ui-monospace, "SF Mono", Menlo, monospace;
+    --font-body:   -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  body {
+    background: var(--navy);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 72px;
+  }
+
+  /* ── Header ─────────────────────────────────────────────────────────────── */
+  .page-header {
+    background: var(--trough);
+    border-bottom: 1px solid var(--rule-hi);
+    padding: 22px 40px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .logo-mark { width: 24px; height: 28px; color: var(--cyan); }
+  .logo-text {
+    font-family: var(--font-display);
+    font-size: 15px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase; color: #fff;
+  }
+  .divider { width: 1px; height: 32px; background: var(--rule-hi); margin: 0 4px; }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 22px; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: uppercase; color: #fff;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 1.8px;
+    text-transform: uppercase; color: var(--cyan);
+    margin-top: 4px;
+  }
+
+  /* ── Verdict banner ──────────────────────────────────────────────────────── */
+  .verdict-bar {
+    background: var(--panel);
+    border-bottom: 1px solid var(--rule-hi);
+    padding: 18px 40px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .verdict-item { display: flex; flex-direction: column; gap: 4px; }
+  .verdict-label {
+    font-family: var(--font-mono); font-size: 9px;
+    letter-spacing: 1.6px; text-transform: uppercase; color: var(--text-faint);
+  }
+  .verdict-value {
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.5px; color: var(--text-muted);
+  }
+  .verdict-value.critical { color: var(--red); }
+  .verdict-value.warn     { color: var(--gold); }
+  .verdict-value.pass     { color: var(--green); }
+  .verdict-sep { width: 1px; height: 36px; background: var(--rule-hi); }
+
+  /* ── Layout ──────────────────────────────────────────────────────────────── */
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 40px 40px 0; }
+
+  /* ── Section ─────────────────────────────────────────────────────────────── */
+  .section { margin-bottom: 52px; }
+  .section-head {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+  }
+  .section-head h2 {
+    font-family: var(--font-display);
+    font-size: 15px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase; color: #fff;
+    white-space: nowrap;
+  }
+  .section-head .rule { flex: 1; height: 1px; background: var(--rule-hi); }
+  .section-num {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--cyan); letter-spacing: 1.5px; flex-shrink: 0;
+  }
+
+  /* ── Gap table ───────────────────────────────────────────────────────────── */
+  .gap-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .gap-table th {
+    font-family: var(--font-mono); font-size: 9.5px;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--text-faint); padding: 7px 14px;
+    text-align: left; border-bottom: 1px solid var(--rule-hi);
+  }
+  .gap-table td {
+    padding: 11px 14px; border-bottom: 1px solid var(--rule);
+    vertical-align: middle; color: var(--text-muted);
+  }
+  .gap-table tr:last-child td { border-bottom: none; }
+  .gap-table td.area { color: #fff; font-size: 12.5px; }
+  .gap-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
+  .overflow { overflow-x: auto; }
+  .panel-wrap {
+    background: var(--panel); border: 1px solid var(--rule-hi);
+    border-radius: 10px; overflow: hidden;
+  }
+
+  /* ── Severity chips ──────────────────────────────────────────────────────── */
+  .chip {
+    display: inline-flex; align-items: center;
+    font-family: var(--font-mono); font-size: 9.5px;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    border-radius: 4px; padding: 2px 8px; white-space: nowrap;
+  }
+  .chip-red    { background: var(--red-dim);   border: 1px solid var(--red-border);   color: var(--red); }
+  .chip-gold   { background: var(--gold-dim);  border: 1px solid var(--gold-border);  color: var(--gold); }
+  .chip-green  { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); }
+  .chip-cyan   { background: var(--cyan-dim);  border: 1px solid var(--cyan-border);  color: var(--cyan); }
+  .chip-muted  { background: rgba(255,255,255,0.05); border: 1px solid var(--rule-hi); color: var(--text-muted); }
+
+  /* ── Finding cards ───────────────────────────────────────────────────────── */
+  .finding {
+    border-left: 3px solid var(--rule-hi);
+    background: var(--panel);
+    border-radius: 0 10px 10px 0;
+    padding: 18px 22px;
+    margin-bottom: 12px;
+  }
+  .finding.high   { border-left-color: var(--red); }
+  .finding.medium { border-left-color: var(--gold); }
+  .finding.low    { border-left-color: var(--cyan); }
+  .finding.pass   { border-left-color: var(--green); }
+
+  .finding-head {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .finding-title {
+    font-family: var(--font-display);
+    font-size: 14px; font-weight: 700;
+    letter-spacing: 0.4px; text-transform: uppercase;
+    color: #fff; flex: 1;
+  }
+  .finding p {
+    font-size: 13px; color: var(--text-muted); line-height: 1.65;
+    margin-bottom: 10px;
+  }
+  .finding p:last-child { margin-bottom: 0; }
+  .finding strong { color: rgba(255,255,255,0.80); }
+
+  /* ── Code ────────────────────────────────────────────────────────────────── */
+  code {
+    font-family: var(--font-mono); font-size: 11px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--rule-hi);
+    border-radius: 3px; padding: 1px 5px; color: var(--cyan);
+  }
+  pre {
+    font-family: var(--font-mono); font-size: 11.5px;
+    background: var(--trough); border: 1px solid var(--rule-hi);
+    border-radius: 8px; padding: 14px 16px;
+    overflow-x: auto; line-height: 1.75;
+    color: rgba(255,255,255,0.72); margin: 10px 0;
+  }
+  pre .k { color: var(--cyan); }
+  pre .t { color: var(--gold); }
+  pre .s { color: #A7E2F7; }
+  pre .c { color: rgba(255,255,255,0.30); font-style: italic; }
+  pre .r { color: var(--red); }
+
+  /* ── Sub-list inside findings ────────────────────────────────────────────── */
+  .sub-list { margin: 10px 0 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .sub-list li {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 12.5px; color: var(--text-muted); line-height: 1.55;
+  }
+  .sub-list .bullet {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--text-faint); flex-shrink: 0; padding-top: 2px;
+  }
+
+  /* ── Note banner ─────────────────────────────────────────────────────────── */
+  .note {
+    background: var(--gold-dim); border: 1px solid var(--gold-border);
+    border-radius: 8px; padding: 12px 16px;
+    font-size: 12.5px; color: rgba(255,220,100,0.85); margin: 12px 0;
+  }
+  .note strong { color: var(--gold); }
+
+  .alert {
+    background: var(--red-dim); border: 1px solid var(--red-border);
+    border-radius: 8px; padding: 12px 16px;
+    font-size: 12.5px; color: rgba(255,160,160,0.85); margin: 12px 0;
+  }
+  .alert strong { color: var(--red); }
+
+  /* ── Grid ────────────────────────────────────────────────────────────────── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 700px) { .grid2 { grid-template-columns: 1fr; } }
+
+  /* ── Compliant row ───────────────────────────────────────────────────────── */
+  .pass-grid { display: flex; flex-direction: column; gap: 8px; }
+  .pass-item {
+    background: rgba(31,201,142,0.05);
+    border: 1px solid var(--green-border);
+    border-radius: 8px; padding: 11px 16px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .pass-mark {
+    font-family: var(--font-mono); font-size: 12px;
+    color: var(--green); flex-shrink: 0;
+  }
+  .pass-text { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+  .pass-text strong { color: rgba(255,255,255,0.78); }
+
+  /* ── Route comparison ────────────────────────────────────────────────────── */
+  .route-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+  .route-col { border-radius: 8px; padding: 14px 16px; }
+  .route-col.actual  { background: var(--red-dim);  border: 1px solid var(--red-border); }
+  .route-col.target  { background: var(--green-dim); border: 1px solid var(--green-border); }
+  .route-col-label {
+    font-family: var(--font-mono); font-size: 9.5px;
+    letter-spacing: 1.4px; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .route-col.actual  .route-col-label { color: var(--red); }
+  .route-col.target  .route-col-label { color: var(--green); }
+  .route-entry {
+    font-family: var(--font-mono); font-size: 11px;
+    color: rgba(255,255,255,0.65); line-height: 2;
+  }
+  .route-entry .path { color: #fff; }
+  .route-entry .arrow { color: var(--text-faint); }
+  @media (max-width: 700px) { .route-compare { grid-template-columns: 1fr; } }
+</style>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="logo">
+    <svg class="logo-mark" viewBox="0 0 120 140" fill="none">
+      <path d="M60 6 C60 6 60 18 71 18 L104 18 C108 18 110 21 110 25 L110 64 C110 99 88 122 60 134 C32 122 10 99 10 64 L10 25 C10 21 12 18 16 18 L49 18 C60 18 60 6 60 6 Z" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"/>
+    </svg>
+    <span class="logo-text">Tortelligence</span>
+  </div>
+  <div class="divider"></div>
+  <div>
+    <div class="page-title">Architecture Assessment</div>
+    <div class="eyebrow">mockup-v1 · vs. ADR-00X &amp; TS-00X · 2026-06-19</div>
+  </div>
+</div>
+
+<!-- ── Verdict bar ─────────────────────────────────────────────────────────── -->
+<div class="verdict-bar">
+  <div class="verdict-item">
+    <span class="verdict-label">Branch</span>
+    <span class="verdict-value">mockup-v1</span>
+  </div>
+  <div class="verdict-sep"></div>
+  <div class="verdict-item">
+    <span class="verdict-label">Reviewed Against</span>
+    <span class="verdict-value">ADR-00X · TS-00X</span>
+  </div>
+  <div class="verdict-sep"></div>
+  <div class="verdict-item">
+    <span class="verdict-label">High Severity Gaps</span>
+    <span class="verdict-value critical">3</span>
+  </div>
+  <div class="verdict-item">
+    <span class="verdict-label">Medium Severity Gaps</span>
+    <span class="verdict-value warn">3</span>
+  </div>
+  <div class="verdict-item">
+    <span class="verdict-label">Low / Minor</span>
+    <span class="verdict-value">3</span>
+  </div>
+  <div class="verdict-sep"></div>
+  <div class="verdict-item">
+    <span class="verdict-label">Store Architecture</span>
+    <span class="verdict-value pass">Compliant</span>
+  </div>
+  <div class="verdict-item">
+    <span class="verdict-label">Stateless Renderers</span>
+    <span class="verdict-value pass">Compliant</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ── Gap Summary ─────────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">00</span>
+      <h2>Gap Summary</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="overflow panel-wrap">
+      <table class="gap-table">
+        <thead>
+          <tr>
+            <th>Area</th>
+            <th>Finding</th>
+            <th>Severity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="area">ADR / TS stack scope</td>
+            <td>Docs describe Vite + React Router; project is Next.js App Router</td>
+            <td><span class="chip chip-red">Must fix docs</span></td>
+          </tr>
+          <tr>
+            <td class="area">URL routing</td>
+            <td>Surfaces and expanded cards are not URL-addressable — no deep links, no back button</td>
+            <td><span class="chip chip-red">High</span></td>
+          </tr>
+          <tr>
+            <td class="area">Data layer</td>
+            <td>All opportunity data is hardcoded TS constants; Firestore is bypassed</td>
+            <td><span class="chip chip-red">High</span></td>
+          </tr>
+          <tr>
+            <td class="area">ClientView module</td>
+            <td>Pharma module hard-coded in component; must come from data</td>
+            <td><span class="chip chip-red">High</span></td>
+          </tr>
+          <tr>
+            <td class="area">Solvency data model</td>
+            <td><code>SOLVENCY_STATE</code> is a detached map by ID; should be a field on <code>Opportunity</code></td>
+            <td><span class="chip chip-gold">Medium</span></td>
+          </tr>
+          <tr>
+            <td class="area">Cross-surface query state</td>
+            <td>Search query is shared global state — persists silently across surfaces</td>
+            <td><span class="chip chip-gold">Medium</span></td>
+          </tr>
+          <tr>
+            <td class="area">Styling convention</td>
+            <td>All custom components use inline CSS; TS-00X requires Tailwind</td>
+            <td><span class="chip chip-gold">Medium</span></td>
+          </tr>
+          <tr>
+            <td class="area">Action naming</td>
+            <td><code>setModule</code> / <code>setQuery</code> are generic setters; should be domain-named</td>
+            <td><span class="chip chip-cyan">Low</span></td>
+          </tr>
+          <tr>
+            <td class="area">Sidebar component</td>
+            <td>Defined but never imported or rendered — dead code</td>
+            <td><span class="chip chip-cyan">Low</span></td>
+          </tr>
+          <tr>
+            <td class="area">Surface store migration</td>
+            <td><code>version: 1</code> declared with no migration function</td>
+            <td><span class="chip chip-muted">Minor</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Section 1: Stack Mismatch ──────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <h2>Stack Mismatch — ADR / TS vs. Reality</h2>
+      <div class="rule"></div>
+      <span class="chip chip-red">Must fix docs</span>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-head">
+        <span class="finding-title">ADR and TS describe the wrong runtime</span>
+      </div>
+      <p>Both documents open with the scope line <strong>"React + Vite + Tailwind + shadcn/ui + Zustand"</strong> and the routing section mandates <strong>React Router v6</strong>. The actual project is <strong>Next.js 16 App Router</strong> — not Vite, not React Router.</p>
+      <p>This isn't a code problem but it's a governance problem. The docs are the spec that reviewers and AI tools work against. Every section that says "Vite" or "React Router" currently describes an application that doesn't exist.</p>
+      <p>The routing section should be rewritten to describe <strong>Next.js App Router segments</strong> as the routing primitive, with URL params carrying entity identity and layout files providing nested structure. The Zustand nav-store history pattern the ADR was migrating away from maps almost 1-to-1 onto what the surface store is still doing today.</p>
+    </div>
+  </div>
+
+  <!-- ── Section 2: Routing ──────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <h2>URL Routing — Not Implemented</h2>
+      <div class="rule"></div>
+      <span class="chip chip-red">High</span>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-head">
+        <span class="finding-title">Everything lives at a single route</span>
+      </div>
+      <p>The ADR states: <strong>"The browser URL becomes the source of truth for navigation state."</strong> The current implementation does the opposite. There is exactly one Next.js route — <code>app/page.tsx</code> at <code>/</code>. Surface switching and card expand/collapse exist only in Zustand and localStorage; the URL never changes.</p>
+
+      <div class="route-compare">
+        <div class="route-col actual">
+          <div class="route-col-label">Current — all state in store</div>
+          <div class="route-entry">
+            <span class="path">/</span> <span class="arrow">→</span> everything<br>
+            surface: localStorage only<br>
+            expandedId: in-memory only<br>
+            no deep links · no back button
+          </div>
+        </div>
+        <div class="route-col target">
+          <div class="route-col-label">Target — Next.js App Router</div>
+          <div class="route-entry">
+            <span class="path">/internal</span> <span class="arrow">→</span> SummaryFeed<br>
+            <span class="path">/client</span> <span class="arrow">→</span> ClientView<br>
+            <span class="path">/internal/[id]</span> <span class="arrow">→</span> expanded card<br>
+            browser history · shareable URLs
+          </div>
+        </div>
+      </div>
+
+      <p>The surface store's localStorage persistence is currently doing the job the URL should be doing. Concretely: if you send a colleague a link to a specific opportunity card, they land on the default surface with nothing expanded. The ADR explicitly identifies this as unacceptable.</p>
+    </div>
+  </div>
+
+  <!-- ── Section 3: Mock Data ────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <h2>Mock Data — Where It Comes From</h2>
+      <div class="rule"></div>
+      <span class="chip chip-red">High</span>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-head">
+        <span class="finding-title">All data is hardcoded TypeScript constants</span>
+      </div>
+      <p>Every opportunity, module definition, and solvency value lives in <code>lib/opportunities.ts</code> as static exports imported directly into <code>useOpportunityView</code> at module load time. No fetch, no server action, no Firestore.</p>
+<pre><span class="c">// lib/opportunities.ts — the entire data layer right now</span>
+<span class="k">export const</span> <span class="t">OPPORTUNITIES</span>: Opportunity[] = [
+  { id: <span class="s">"TG-2588"</span>, module: <span class="s">"pharma"</span>, label: <span class="s">"Harmful Drug A"</span>, score: 91, ... },
+  <span class="c">// 11 more static records</span>
+]</pre>
+      <p>The existing Firestore infrastructure — <code>lib/firestore.ts</code>, <code>lib/items.ts</code>, the <code>getItems()</code> function — is <strong>completely bypassed</strong> by the Tortelligence UI. It was the foundation of the original proto-next and is now dead code relative to this feature.</p>
+      <p>Since <code>OPPORTUNITIES</code> is a static import consumed by a <code>"use client"</code> hook, the full dataset ships in the browser JS bundle. For 12 records this is harmless; for a real portfolio with hundreds of cases it's the wrong architecture.</p>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-head">
+        <span class="finding-title">Three specific data model issues</span>
+      </div>
+      <ul class="sub-list">
+        <li>
+          <span class="bullet">A.</span>
+          <span><strong>SOLVENCY_STATE is a detached parallel map.</strong> Every component that needs solvency calls <code>SOLVENCY_STATE[opp.id] ?? "Unknown"</code>. It should be <code>opp.solvency</code> — a typed field on <code>Opportunity</code>. The current approach couples two separate data structures by a shared string key with no enforcement.</span>
+        </li>
+        <li>
+          <span class="bullet">B.</span>
+          <span><strong>ClientView hard-codes the pharma module.</strong> Line 10 of <code>client-view.tsx</code>: <code>useOpportunityView("pharma")</code>. The client's subscribed module is a literal in the component, not data-driven. In production this comes from the client record (which law firm subscribed to which module).</span>
+        </li>
+        <li>
+          <span class="bullet">C.</span>
+          <span><strong>No async loading or error states.</strong> The architecture has no provision for async data — no loading skeleton, no error boundary, no empty state for a real fetch that returns zero results.</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Section 4: Store Contract ──────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <h2>Store Contract — Mostly Compliant</h2>
+      <div class="rule"></div>
+      <span class="chip chip-green">Largely Pass</span>
+    </div>
+
+    <div class="pass-grid">
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>state / actions split</strong> — both stores follow the TS-00X contract exactly. <code>OpportunityStore</code> and <code>SurfaceStore</code> each have a serializable <code>state</code> object and a named <code>actions</code> object.</span>
+      </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>Feature-scoped, not mega-store</strong> — opportunity UI state and surface preference are separated into two purpose-built stores. No single god-object holding unrelated state.</span>
+      </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>Persistence configured correctly</strong> — <code>useSurfaceStore</code> uses <code>persist</code> with <code>name</code>, <code>version: 1</code>, and <code>partialize</code> to store only intentionally durable state. Transient state in <code>useOpportunityStore</code> is correctly left unpersisted.</span>
+      </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>Feature hooks wrap selectors</strong> — <code>useOpportunityView</code> and <code>useSurface</code> select minimal state and expose stable callbacks. Components don't reach into stores directly.</span>
+      </div>
+    </div>
+
+    <div style="margin-top: 12px;">
+      <div class="finding low">
+        <div class="finding-head">
+          <span class="finding-title">Action naming — generic setters</span>
+          <span class="chip chip-cyan">Low</span>
+        </div>
+        <p>TS-00X says actions must be <em>"domain-named and intent-revealing."</em> <code>setModule</code> and <code>setQuery</code> describe mechanism, not intent. Preferred alternatives: <code>applyModuleFilter(module)</code>, <code>clearModuleFilter()</code>, <code>applySearch(query)</code>. This makes state traces and code search meaningfully more readable.</p>
+      </div>
+      <div class="finding low">
+        <div class="finding-head">
+          <span class="finding-title">Surface store has no migration function</span>
+          <span class="chip chip-muted">Minor</span>
+        </div>
+        <p><code>version: 1</code> is declared but there's no <code>migrate</code> function defined. TS-00X requires a migration strategy when persistence is versioned. For v1 this is low-risk (there's no v0 state to migrate from), but the pattern needs to be in place before a v2 shape change.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Section 5: Stateless Renderers ─────────────────────────────────── -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <h2>Stateless Renderer Rule — Compliant</h2>
+      <div class="rule"></div>
+      <span class="chip chip-green">Pass</span>
+    </div>
+
+    <div class="pass-grid">
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>OppCard owns no state</strong> — receives <code>expanded</code> as prop, emits <code>onToggle</code> callback. The expand state lives in <code>useOpportunityStore.state.expandedId</code>, not inside the card.</span>
+      </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>SummaryFeed and ClientView</strong> — both consume <code>useOpportunityView()</code> feature hook with no local <code>useState</code> for business state.</span>
+      </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>InfoDot tooltip</strong> — delegates open/close to Radix UI internally. Tooltip visibility is implementation-detail state and is a named TS-00X exception ("transient focus or hover").</span>
+      </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>shadcn/ui Input in ClientView</strong> — <code>value</code> is wired to external <code>query</code> state, <code>onChange</code> calls <code>setQuery</code>. Correctly externally controlled per the standard.</span>
+      </div>
+    </div>
+
+    <div style="margin-top: 12px;">
+      <div class="finding medium">
+        <div class="finding-head">
+          <span class="finding-title">Shared query state across surfaces</span>
+          <span class="chip chip-gold">Medium</span>
+        </div>
+        <p><code>useOpportunityStore.state.query</code> is global. If a user types "Device" in SummaryFeed and switches to ClientView (which is hard-pinned to pharma), the query is still active and silently returns zero results. This isn't a TS violation — the state is correctly externalized — but it's a latent UX bug. Either scope query to the active surface, or clear it on surface switch via a <code>setSurface</code> side-effect.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Section 6: Styling ──────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">06</span>
+      <h2>Styling Convention — Meaningful Deviation</h2>
+      <div class="rule"></div>
+      <span class="chip chip-gold">Medium</span>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-head">
+        <span class="finding-title">Custom components bypass Tailwind entirely</span>
+      </div>
+      <p>TS-00X requires that styling "remain aligned with the project Tailwind configuration, tokens, and approved primitives." Every Tortelligence custom component — <code>OppCard</code>, <code>SummaryFeed</code>, <code>AppShell</code>, <code>ClientView</code>, <code>EvidenceLayer</code>, and all primitives — uses inline CSS with CSS variable references instead of Tailwind classes.</p>
+
+<pre><span class="c">// What's in the codebase</span>
+style={{ <span class="t">fontFamily</span>: <span class="s">"var(--font-dm-mono)"</span>, <span class="t">fontSize</span>: 10, <span class="t">letterSpacing</span>: <span class="s">"1.8px"</span> }}
+
+<span class="c">// What TS-00X expects</span>
+<span class="k">className</span>=<span class="s">"font-mono text-xs tracking-widest"</span></pre>
+
+      <p>The shadcn/ui components (<code>Input</code>, <code>Badge</code>, <code>Tooltip</code>) use Tailwind correctly. Everything custom doesn't. This creates a two-tier styling system where Tailwind's JIT purging, responsive utilities, and design token enforcement don't apply to the bulk of the component tree. It also limits what AI tooling can reliably reason about — one of the explicit goals of standardizing on Tailwind.</p>
+      <p>This is understandable as a mockup shortcut — inline styles are fast to write when iterating on layout — but the deviation needs to be resolved before the component tree goes to production.</p>
+    </div>
+  </div>
+
+  <!-- ── Section 7: Dead Code ────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">07</span>
+      <h2>Orphaned Code</h2>
+      <div class="rule"></div>
+      <span class="chip chip-cyan">Low</span>
+    </div>
+
+    <div class="grid2">
+      <div class="finding low">
+        <div class="finding-head">
+          <span class="finding-title">Sidebar component</span>
+        </div>
+        <p><code>components/tortelligence/sidebar.tsx</code> is 133 lines of placeholder nav and account area. It is never imported or rendered by <code>AppShell</code> or any other component. Either it belongs to an earlier design direction or it was superseded by the top-bar surface switcher. Should be deleted or wired up.</p>
+      </div>
+      <div class="finding low">
+        <div class="finding-head">
+          <span class="finding-title">Original Firestore data path</span>
+        </div>
+        <p><code>lib/firestore.ts</code>, <code>lib/items.ts</code>, and the <code>getItems()</code> function still exist from proto-next's original Firestore-backed home page. They are not called by anything in the Tortelligence UI. When the real data layer is built, these may become the foundation — but right now they're disconnected and should be treated as such.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── What's Actually Good ────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">08</span>
+      <h2>What's Working Well</h2>
+      <div class="rule"></div>
+      <span class="chip chip-green">For the Record</span>
+    </div>
+
+    <div class="pass-grid">
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>Store architecture is sound.</strong> The state/actions split, feature hook pattern, and persistence config are all done correctly. The foundation is right — the gaps are in what connects to it, not in the stores themselves.</span>
+      </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>No local business state in components.</strong> Filters, selection, and surface preference all live where TS-00X says they should — in stores, accessed via hooks.</span>
+      </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>Surface persistence works correctly.</strong> <code>localStorage</code> key, version, and partialize are all configured. Verified that reloading the page restores the active surface.</span>
+      </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>shadcn/ui primitives used for interactive elements.</strong> <code>Input</code> and <code>Tooltip</code> are wired to external state, not self-contained — consistent with the standard's externally controlled primitives requirement.</span>
+      </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>ClientView and SummaryFeed share one hook correctly.</strong> <code>useOpportunityView</code> accepts an optional module pin — SummaryFeed passes none, ClientView passes <code>"pharma"</code> — without duplicating filter logic.</span>
+      </div>
+    </div>
+  </div>
+
+</div>

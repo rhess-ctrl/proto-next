@@ -105,6 +105,16 @@ The browser URL MUST be the source of truth for navigation state. Views that rep
 
 Not all navigation-adjacent state belongs in the URL. Durable user preferences — such as a collapsed sidebar or a selected surface that is per-user rather than shareable — SHOULD be persisted via Zustand `persist` to `localStorage`. The distinction: if two users sharing a URL should see the same view, it belongs in the URL; if the state is personal and should survive reload without appearing in the link, it belongs in a persisted store.
 
+## API Layer Standard
+
+Next.js Route Handlers under `app/api/` serve as the BFF layer. The following rules apply.
+
+- Server components MAY call backend services (Firestore Admin SDK, internal utilities) directly within the same server process. This is the preferred path for initial page data.
+- Client components MUST NOT call backend services directly from the browser. All post-hydration data access MUST go through a Route Handler.
+- Route Handlers MUST own credential handling, data transformation, and response shaping. Raw backend document shapes MUST NOT be forwarded to the client as-is.
+- Each Route Handler SHOULD present a stable, UI-optimized contract. Backend schema changes are absorbed in the handler, not in UI components.
+- Route Handlers SHOULD validate and authenticate requests before performing any data access.
+
 ## State Boundaries
 
 Frontend state is divided into three categories.

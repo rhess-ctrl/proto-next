@@ -88,6 +88,33 @@ URL-sync via `history.pushState` without a routing library was evaluated in an e
 
 Retaining the Zustand-only navigation model with no URL support is not acceptable for the product requirement of shareable deep-link URLs.
 
+## API Layer (Backend for Frontend)
+
+### Context
+
+The application's backend services — Firestore, and any future data sources — require server-side credentials that must never be exposed to the browser. Client components have no safe path to these services directly. A mediating layer is needed that holds credentials server-side, shapes data into UI-optimal payloads, and presents a stable contract the frontend depends on rather than coupling to raw backend shapes.
+
+### Decision
+
+Next.js Route Handlers (`app/api/...`) serve as the Backend for Frontend (BFF) layer for this application. This is a natural extension of the framework already in use and requires no additional infrastructure.
+
+The BFF boundary works as follows:
+
+- **Server components** may call backend services — Firestore via the Admin SDK, internal utilities — directly within the same server process, with no HTTP round-trip. This is the preferred path for initial page data that does not require user interaction.
+- **Client components** that need to fetch or mutate data after hydration MUST do so through Route Handlers, never by reaching backend services directly from the browser.
+- Route Handlers own credential handling, data transformation, aggregation across multiple backend calls, and response shaping. They are the single place where raw backend data is converted into the structure the UI depends on.
+- The request/response contract of each Route Handler is the stable interface the frontend builds against. Backend data model changes are absorbed in the Route Handler rather than rippling into UI components.
+
+### Decision Drivers
+
+Next.js Route Handlers are colocated with the application code, share the same deployment unit, and run in the same environment where Admin SDK credentials are available. This eliminates the need for a separate API service for UI-adjacent data access while keeping credentials server-side. The BFF pattern also provides a natural place to enforce auth checks, rate limiting, and response caching at the API boundary before data reaches client components.
+
+### Consequences
+
+Backend credentials (Firestore service account, API keys) remain exclusively in the server environment. Client components depend on Route Handler contracts rather than raw Firestore document shapes, so the UI is insulated from backend schema changes. Route Handlers can aggregate and reshape data optimally for each view, reducing over-fetching.
+
+The tradeoff is that Route Handlers add a hop for client-initiated fetches that server components could handle directly. The guidance above addresses this: server components take the direct path for page-load data, and Route Handlers handle post-hydration client needs.
+
 ## Rejected Alternatives
 
 Ad hoc local state plus Context was rejected because it tends to produce inconsistent patterns and weaker traceability as the application grows.

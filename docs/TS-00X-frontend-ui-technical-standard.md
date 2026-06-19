@@ -4,7 +4,7 @@
 - Date: 2026-04-22
 - Owners: <you / team>
 - Related ADR: ADR-00X Frontend UI Architecture
-- Scope: React + Vite + Tailwind + shadcn/ui + Zustand (+ persist) + AI/MCP
+- Scope: Next.js (App Router) + Tailwind + shadcn/ui + Zustand (+ persist) + AI/MCP
 
 ## Purpose
 
@@ -14,7 +14,7 @@ It captures the detailed material intentionally left out of the ADR, including c
 
 ## Scope
 
-This standard applies to frontend code built with React, Vite, Tailwind, shadcn/ui, Zustand, Zustand persistence, and AI- or MCP-based development tooling.
+This standard applies to frontend code built with Next.js (App Router), Tailwind, shadcn/ui, Zustand, Zustand persistence, and AI- or MCP-based development tooling.
 
 It applies to product UI, shared component primitives, feature-level state management, and approved schema-driven or generated internal tooling that is brought under the same frontend architecture.
 
@@ -74,6 +74,36 @@ In practice:
 - Actions flow out of components through store actions or callbacks that ultimately invoke store actions.
 - Components MUST NOT manipulate shared state through arbitrary raw setters when a domain-named action should exist.
 - Components SHOULD select only the minimum state needed to render their responsibilities.
+
+## Routing Standard
+
+Next.js App Router is the routing layer for this project. The following rules apply.
+
+### URL as Source of Truth
+
+The browser URL MUST be the source of truth for navigation state. Views that represent distinct application destinations — a surface, a detail page, a filtered subset that a user might share or bookmark — MUST be addressable as URL segments rather than held exclusively in a Zustand store.
+
+### Route Segments and Params
+
+- Feature areas MUST be represented as App Router route segments under the `app/` directory.
+- Entity identity (e.g., an opportunity ID) MUST be carried in dynamic route params (`[id]`) rather than in store state.
+- Nested layouts (`layout.tsx`) SHOULD be used to provide shared chrome — navigation, top bars, sidebars — without re-mounting on route transitions.
+
+### Server vs. Client Components
+
+- Route-level page components (`page.tsx`) SHOULD be server components by default.
+- Server components SHOULD handle initial data fetching and pass data as props to client component subtrees.
+- Components that require interactivity — stores, event handlers, browser APIs — MUST be marked `"use client"` and placed below the server component boundary.
+- The `"use client"` boundary SHOULD be pushed as far down the tree as possible to maximize server-rendered output.
+
+### Navigation APIs
+
+- Components MUST use `useRouter`, `useParams`, and `usePathname` from `next/navigation` rather than browser history APIs directly.
+- Back-navigation MUST use `router.back()` rather than a custom history stack in a Zustand store.
+
+### Durable Preference State
+
+Not all navigation-adjacent state belongs in the URL. Durable user preferences — such as a collapsed sidebar or a selected surface that is per-user rather than shareable — SHOULD be persisted via Zustand `persist` to `localStorage`. The distinction: if two users sharing a URL should see the same view, it belongs in the URL; if the state is personal and should survive reload without appearing in the link, it belongs in a persisted store.
 
 ## State Boundaries
 
@@ -252,7 +282,7 @@ This appendix records the alternatives considered during architecture selection 
 | A. Ad hoc local state + Context                    | Each feature chooses its own mix of component `useState`, Context, and custom hooks. | Low.                        | Low.               | Low.                | Low.           | Low.          | Medium.                  | High.                                                       | Rejected.                                                    |
 | B. Redux Toolkit with reducers/selectors           | Centralized store with reducers, actions, and selectors.     | High.                       | High.              | High.               | Medium.        | Medium.       | Medium.                  | Medium.                                                     | Rejected for now because it is more ceremonious than desired for the expected team size and iteration speed. |
 | C. Zustand without formal actions/state separation | Zustand used as a flexible store without a formal `state` plus `actions` contract. | Medium.                     | Medium-Low.        | Low.                | Low-Medium.    | Medium.       | Medium.                  | Medium-High.                                                | Rejected because it allows mutations and workflows to spread across arbitrary call sites. |
-| D. Action-driven Zustand + stateless components    | React function components as stateless renderers, behavior in feature-scoped Zustand stores with explicit `state` and `actions`, shadcn/ui as presentational primitives, and AI tooling normalized to the same architecture. | High.                       | High.              | Medium.             | Medium.        | High.         | High.                    | Medium, mitigated by explicit rules and code review checks. | Selected.                                                    |
+| D. Action-driven Zustand + stateless components    | React function components as stateless renderers, behavior in feature-scoped Zustand stores with explicit `state` and `actions`, Next.js App Router for URL-based navigation, shadcn/ui as presentational primitives, and AI tooling normalized to the same architecture. | High.                       | High.              | Medium.             | Medium.        | High.         | High.                    | Medium, mitigated by explicit rules and code review checks. | Selected.                                                    |
 
 ## Appendix B: Future Directions
 

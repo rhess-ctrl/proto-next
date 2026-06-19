@@ -3,12 +3,12 @@
 - Status: Draft
 - Date: 2026-04-22
 - Owners: <you / team>
-- Scope: React + Vite + Tailwind + shadcn/ui + Zustand (+ persist) + AI/MCP
+- Scope: Next.js (App Router) + Tailwind + shadcn/ui + Zustand (+ persist) + AI/MCP
 - Related Standard: TS-00X Frontend UI Technical Standard
 
 ## Context
 
-The frontend stack uses React, Vite, Tailwind, shadcn/ui, and Zustand, and needs a consistent architectural approach that keeps UI behavior understandable across features and teams.
+The frontend stack uses Next.js (App Router), Tailwind, shadcn/ui, and Zustand, and needs a consistent architectural approach that keeps UI behavior understandable across features and teams.
 
 React function components plus hooks make it easy to mix local state, context, and external stores in ad hoc ways, which can lead to inconsistent implementation patterns and weak traceability as the application grows.
 
@@ -54,35 +54,39 @@ Thin container or feature-hook layers may be introduced to keep JSX simple while
 
 ### Context
 
-The initial architecture deferred URL routing, with navigation managed entirely as a Zustand store holding a tagged-union `view` value. Components render based on the current view, and the store maintains a history stack for back-navigation. This approach eliminated the dependency on React Router but left the application without shareable URLs, bookmarkable deep links, or working browser back/forward buttons.
+The initial architecture deferred URL routing, with navigation managed entirely as a Zustand store holding a tagged-union `view` value. Components render based on the current view, and the store maintains a history stack for back-navigation. This approach left the application without shareable URLs, bookmarkable deep links, or working browser back/forward buttons.
 
-A spike explored adding URL synchronization on top of the existing nav store via `history.pushState` and a custom `viewToPath` / `pathToView` serializer, estimated at roughly 100 lines of new code. While technically viable, this approach would require the team to own and maintain a custom routing layer indefinitely, including serialization edge cases, nested param handling, and server-side catch-all configuration — work that a standard routing library already provides.
-
-The team has since converged on the view that the URL-sync approach trades short-term simplicity for long-term maintenance burden, and that React Router is the more durable choice.
+Because the project is built on Next.js App Router, a dedicated client-side routing library is unnecessary — the framework provides file-system-based routing, nested layouts, dynamic segments, and server-side rendering out of the box.
 
 ### Decision
 
-Adopt React Router v6 for client-side routing. The browser URL becomes the source of truth for navigation state, replacing the tagged-union `view` in the Zustand navigation store. Route params (`:campaignId`, `:leadId`, etc.) carry entity identity. The nav store's internal history stack is removed in favor of browser history; `goBack()` delegates to `navigate(-1)`.
+Adopt **Next.js App Router** for all routing. The browser URL becomes the source of truth for navigation state, replacing any Zustand store that holds a tagged-union view or history stack.
 
-Display names currently embedded in the `view` type (e.g., `campaignName`, `leadName`) are dropped from route state and derived instead from feature stores, which already fetch and hold the relevant records. This is the cleaner long-term approach regardless of routing strategy.
+Route segments (`app/[surface]/page.tsx`, `app/[surface]/[id]/page.tsx`, etc.) carry entity identity via dynamic params. Nested `layout.tsx` files provide shared chrome (top bar, sidebar) without re-rendering on navigation. The Zustand nav store's history stack is removed in favor of browser history; back-navigation uses `router.back()` from `next/navigation`.
 
-The production server must be configured with a catch-all fallback to serve `index.html` for all client-side routes, which is required for any SPA with URL-based routing.
+Display names and other derived values are not embedded in route state. They are derived from feature stores that fetch and hold the relevant records, keeping URLs clean and stable.
+
+Server components handle initial data fetching where possible, passing data down as props to client component subtrees. Client components that require interactivity (stores, event handlers) are marked `"use client"` and sit below the server component boundary.
+
+Durable UI preference state (e.g., active surface) that is not appropriate as a URL segment — because it is a per-user preference rather than a shareable navigation target — SHOULD be persisted via Zustand `persist` to `localStorage` rather than the URL. The surface switcher is the current example of this pattern.
 
 ### Decision Drivers
 
-React Router is the established standard for URL routing in React applications. Most developers on the team already know it, reducing onboarding friction and the risk of bespoke edge-case handling. It handles authentication redirects, nested routes, and route-level code splitting in ways the custom URL-sync approach would need to reimplement independently. The team's judgment that it "just works" is a meaningful signal given that routing edge cases compound over time.
+Next.js App Router is already the project's framework. Adopting its routing model means the team does not take on a separate routing dependency, gets server rendering and streaming for free, and benefits from framework-level support for auth middleware, layout nesting, route-level code splitting, and static generation — all without additional configuration.
 
 ### Consequences
 
-Browser navigation becomes fully functional, and application views become shareable and bookmarkable. Routes also provide a natural integration point for future features such as route-level auth guards, lazy-loaded feature bundles, and analytics instrumentation.
+Browser navigation is fully functional, and application views are shareable and bookmarkable. Route segments are a natural integration point for future features such as middleware-based auth guards, per-route metadata, and analytics instrumentation.
 
-The migration requires refactoring the Zustand navigation store, updating components to use `useParams` and `useNavigate`, removing the embedded history stack, and configuring the hosting environment for SPA fallback. The display-name refactor (dropping `campaignName` and similar fields from the `view` type) is a prerequisite for the migration and should be completed first.
+The migration from Zustand-only view state requires converting top-level view switches into file-system route segments, updating components to use `useParams` and `useRouter` from `next/navigation`, and removing any embedded history stack from stores. Server components should be introduced at the route level where data fetching is involved.
 
 ### Rejected Routing Alternatives
 
-URL-sync via `history.pushState` without a routing library was evaluated in a spike. It is viable for the current set of views but requires the team to own a custom serialization layer and re-solve routing edge cases over time. It was rejected in favor of React Router once the team assessed the long-term maintenance comparison.
+React Router v6 was the prior decision before the project adopted Next.js. It is the established standard for client-side routing in React SPAs but introduces a redundant routing layer when Next.js App Router already provides equivalent — and in many cases superior — capabilities. It was superseded by this decision.
 
-Retaining the Zustand-only navigation model with no URL support was the initial approach and was sufficient during early development, but it was explicitly deferred rather than decided, and the product requirement for shareable deep-link URLs makes it no longer acceptable.
+URL-sync via `history.pushState` without a routing library was evaluated in an earlier spike. It is viable for a small number of views but requires the team to own a custom serialization layer and re-solve routing edge cases indefinitely. It was rejected.
+
+Retaining the Zustand-only navigation model with no URL support is not acceptable for the product requirement of shareable deep-link URLs.
 
 ## Rejected Alternatives
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { bandColor } from "@/lib/band-color"
-import { MODULES, OPPORTUNITIES, type ModuleKey } from "@/lib/opportunities"
+import { MODULES, type ModuleKey } from "@/lib/opportunities"
 import { Spark } from "./spark"
 import { VelocityPill } from "./velocity-pill"
 import { LucideIcon, Pill, Activity, ShoppingBag, Landmark } from "lucide-react"
@@ -14,17 +14,17 @@ const ICON_MAP: Record<string, LucideIcon> = {
 }
 
 type SummaryTileProps = {
-  module: ModuleKey
-  active: boolean
-  onClick: () => void
+  module:      ModuleKey
+  active:      boolean
+  onClick:     () => void
+  topScore:    number
+  count:       number
+  avgVelocity: number
+  topSeries:   number[]
 }
 
-export function SummaryTile({ module, active, onClick }: SummaryTileProps) {
+export function SummaryTile({ module, active, onClick, topScore, count, avgVelocity, topSeries }: SummaryTileProps) {
   const meta = MODULES[module]
-  const list = OPPORTUNITIES.filter((o) => o.module === module).sort((a, b) => b.score - a.score)
-  const top = list[0].score
-  const avgVel = Math.round(list.reduce((s, o) => s + o.velocity.pct, 0) / list.length)
-  const series = list[0].velocity.series
   const Icon = ICON_MAP[meta.icon] ?? Pill
 
   return (
@@ -116,15 +116,15 @@ export function SummaryTile({ module, active, onClick }: SummaryTileProps) {
               fontFamily: "var(--font-dm-mono)",
               fontSize: 30,
               lineHeight: 1,
-              color: bandColor(top),
+              color: topScore > 0 ? bandColor(topScore) : "var(--text-faint)",
               marginTop: 3,
             }}
           >
-            {top}
+            {topScore > 0 ? topScore : "—"}
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <Spark series={series} w={74} h={26} fill color={meta.color} />
+          <Spark series={topSeries} w={74} h={26} fill color={meta.color} />
           <div
             style={{
               display: "flex",
@@ -142,9 +142,9 @@ export function SummaryTile({ module, active, onClick }: SummaryTileProps) {
                 color: "var(--text-faint)",
               }}
             >
-              {list.length} opps
+              {count} opps
             </span>
-            <VelocityPill pct={avgVel} />
+            {avgVelocity > 0 && <VelocityPill pct={avgVelocity} />}
           </div>
         </div>
       </div>

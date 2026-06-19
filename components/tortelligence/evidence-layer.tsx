@@ -1,5 +1,5 @@
 import { bandColor } from "@/lib/band-color"
-import { MODULES, SOLVENCY_STATE, type Opportunity } from "@/lib/opportunities"
+import { MODULES, type Opportunity } from "@/lib/opportunities"
 import { Spark } from "./spark"
 import { VelocityPill } from "./velocity-pill"
 import { SolvencyChip } from "./solvency-chip"
@@ -78,7 +78,7 @@ function BigStat({ label, value, sub }: { label: string; value: string | number;
 
 export function EvidenceLayer({ opp, mode = "internal" }: EvidenceLayerProps) {
   const m = MODULES[opp.module]
-  const solvency = SOLVENCY_STATE[opp.id] ?? "Unknown"
+  const solvency = opp.solvency
 
   return (
     <div

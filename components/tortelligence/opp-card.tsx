@@ -2,7 +2,7 @@
 
 import { ChevronRight } from "lucide-react"
 import { bandColor } from "@/lib/band-color"
-import { MODULES, SOLVENCY_STATE, type Opportunity } from "@/lib/opportunities"
+import { MODULES, type Opportunity } from "@/lib/opportunities"
 import { ScoreNumber } from "./score-number"
 import { ScoreBadge } from "./score-badge"
 import { ModuleBadge } from "./module-badge"
@@ -43,7 +43,7 @@ export function OppCard({
 }: OppCardProps) {
   const m = MODULES[opp.module]
   const accent = bandColor(opp.score)
-  const solvency = SOLVENCY_STATE[opp.id] ?? "Unknown"
+  const solvency = opp.solvency
 
   const border = expanded ? `1px solid ${m.color}80` : "1px solid var(--rule-hi)"
   const shadow = expanded

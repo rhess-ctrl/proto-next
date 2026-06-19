@@ -271,7 +271,7 @@
   <div class="divider"></div>
   <div>
     <div class="page-title">Architecture Assessment</div>
-    <div class="eyebrow">mockup-v1 · vs. ADR-00X &amp; TS-00X · 2026-06-19</div>
+    <div class="eyebrow">mockup-v1 · vs. ADR-00X &amp; TS-00X · revised 2026-06-19</div>
   </div>
 </div>
 
@@ -288,8 +288,12 @@
   </div>
   <div class="verdict-sep"></div>
   <div class="verdict-item">
+    <span class="verdict-label">Resolved Since v1</span>
+    <span class="verdict-value pass">1</span>
+  </div>
+  <div class="verdict-item">
     <span class="verdict-label">High Severity Gaps</span>
-    <span class="verdict-value critical">3</span>
+    <span class="verdict-value critical">4</span>
   </div>
   <div class="verdict-item">
     <span class="verdict-label">Medium Severity Gaps</span>
@@ -331,12 +335,17 @@
         <tbody>
           <tr>
             <td class="area">ADR / TS stack scope</td>
-            <td>Docs describe Vite + React Router; project is Next.js App Router</td>
-            <td><span class="chip chip-red">Must fix docs</span></td>
+            <td>Docs described Vite + React Router — updated to Next.js App Router</td>
+            <td><span class="chip chip-green">Resolved</span></td>
           </tr>
           <tr>
             <td class="area">URL routing</td>
-            <td>Surfaces and expanded cards are not URL-addressable — no deep links, no back button</td>
+            <td>Docs now correct; code still not implemented — single route, nothing URL-addressable</td>
+            <td><span class="chip chip-red">High</span></td>
+          </tr>
+          <tr>
+            <td class="area">API / BFF layer</td>
+            <td>ADR mandates Route Handlers for client data access; none exist for opportunity data</td>
             <td><span class="chip chip-red">High</span></td>
           </tr>
           <tr>
@@ -390,16 +399,15 @@
       <span class="section-num">01</span>
       <h2>Stack Mismatch — ADR / TS vs. Reality</h2>
       <div class="rule"></div>
-      <span class="chip chip-red">Must fix docs</span>
+      <span class="chip chip-green">Resolved</span>
     </div>
 
-    <div class="finding high">
+    <div class="finding pass">
       <div class="finding-head">
-        <span class="finding-title">ADR and TS describe the wrong runtime</span>
+        <span class="finding-title">Docs updated to Next.js App Router</span>
       </div>
-      <p>Both documents open with the scope line <strong>"React + Vite + Tailwind + shadcn/ui + Zustand"</strong> and the routing section mandates <strong>React Router v6</strong>. The actual project is <strong>Next.js 16 App Router</strong> — not Vite, not React Router.</p>
-      <p>This isn't a code problem but it's a governance problem. The docs are the spec that reviewers and AI tools work against. Every section that says "Vite" or "React Router" currently describes an application that doesn't exist.</p>
-      <p>The routing section should be rewritten to describe <strong>Next.js App Router segments</strong> as the routing primitive, with URL params carrying entity identity and layout files providing nested structure. The Zustand nav-store history pattern the ADR was migrating away from maps almost 1-to-1 onto what the surface store is still doing today.</p>
+      <p>Both documents previously opened with the scope line <strong>"React + Vite + Tailwind + shadcn/ui + Zustand"</strong> and mandated <strong>React Router v6</strong> for routing. ADR-00X and TS-00X have since been updated: scope lines now reference Next.js App Router, the routing section has been fully rewritten around file-system segments and <code>next/navigation</code>, and a new BFF section documents the Route Handler pattern for data access.</p>
+      <p>The docs and the actual stack are now aligned. The remaining routing gap is a <strong>code implementation gap</strong>, tracked separately below.</p>
     </div>
   </div>
 
@@ -414,9 +422,10 @@
 
     <div class="finding high">
       <div class="finding-head">
-        <span class="finding-title">Everything lives at a single route</span>
+        <span class="finding-title">Docs are now correct — code is not yet implemented</span>
       </div>
-      <p>The ADR states: <strong>"The browser URL becomes the source of truth for navigation state."</strong> The current implementation does the opposite. There is exactly one Next.js route — <code>app/page.tsx</code> at <code>/</code>. Surface switching and card expand/collapse exist only in Zustand and localStorage; the URL never changes.</p>
+      <p>ADR-00X now correctly states: <strong>"The browser URL becomes the source of truth for navigation state."</strong> The routing section has been fully rewritten around Next.js App Router segments. The doc gap is closed. The code gap is not.</p>
+      <p>There is exactly one Next.js route — <code>app/page.tsx</code> at <code>/</code>. Surface switching and card expand/collapse exist only in Zustand and localStorage; the URL never changes.</p>
 
       <div class="route-compare">
         <div class="route-col actual">
@@ -440,6 +449,25 @@
       </div>
 
       <p>The surface store's localStorage persistence is currently doing the job the URL should be doing. Concretely: if you send a colleague a link to a specific opportunity card, they land on the default surface with nothing expanded. The ADR explicitly identifies this as unacceptable.</p>
+    </div>
+  </div>
+
+  <!-- ── Section 2b: BFF Gap ────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">02b</span>
+      <h2>API / BFF Layer — Not Implemented</h2>
+      <div class="rule"></div>
+      <span class="chip chip-red">High</span>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-head">
+        <span class="finding-title">ADR mandates Route Handlers; none exist for opportunity data</span>
+      </div>
+      <p>The updated ADR-00X now defines a BFF pattern: <strong>client components must access data through Next.js Route Handlers</strong>, never by reaching backend services directly. Route Handlers own credentials, data transformation, and the stable UI contract.</p>
+      <p>The current implementation has no Route Handlers for opportunity data. The only existing Route Handler is <code>app/api/items/route.ts</code>, which serves the original Firestore <code>items</code> collection and is unrelated to the Tortelligence UI. All opportunity data still comes from hardcoded constants imported at module load time — which also means the data layer gap (Section 03) and the BFF gap are the same problem seen from two angles.</p>
+      <p>Closing both gaps means: create a Route Handler (e.g. <code>app/api/opportunities/route.ts</code>) that reads from Firestore and returns UI-shaped opportunity records; have server components call it on page load, and client components call it for post-hydration fetches. The static <code>OPPORTUNITIES</code> constant in <code>lib/opportunities.ts</code> becomes the seed/fallback only.</p>
     </div>
   </div>
 

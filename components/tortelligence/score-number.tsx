@@ -23,10 +23,11 @@ export function ScoreNumber({ score, size = 42 }: ScoreNumberProps) {
       <span
         style={{
           fontFamily: "var(--font-dm-mono)",
-          fontSize: 10,
+          fontSize: 11,
+          fontWeight: 500,
           letterSpacing: "1.5px",
           textTransform: "uppercase",
-          color: "var(--text-faint)",
+          color: "rgba(255,255,255,0.62)",
           marginTop: 4,
         }}
       >

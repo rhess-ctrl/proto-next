@@ -40,10 +40,10 @@ export type Opportunity = {
 }
 
 export const MODULES: Record<ModuleKey, Module> = {
-  pharma:        { num: "01", short: "Pharma",        label: "Pharmaceutical Drug & Biologic Injury", icon: "pill",         color: "#27BAEC", reportUnit: "adverse-event reports" },
-  device:        { num: "02", short: "Device",        label: "Medical Device Injury",                 icon: "activity",     color: "#7E8BF5", reportUnit: "device reports" },
-  consumer:      { num: "03", short: "Consumer",      label: "Consumer Product Harm",                 icon: "shopping-bag", color: "#E0A93C", reportUnit: "consumer product reports" },
-  institutional: { num: "04", short: "Institutional", label: "Institutional Sexual Abuse",            icon: "landmark",     color: "#B57BE8", reportUnit: "documented incidents and articles" },
+  pharma:        { num: "01", short: "Pharma",        label: "Pharmaceutical Drug & Biologic Injury", icon: "pill",         color: "#4F86F0", reportUnit: "adverse-event reports" },
+  device:        { num: "02", short: "Device",        label: "Medical Device Injury",                 icon: "activity",     color: "#9168F0", reportUnit: "device reports" },
+  consumer:      { num: "03", short: "Consumer",      label: "Consumer Product Harm",                 icon: "shopping-bag", color: "#CB5FD2", reportUnit: "consumer product reports" },
+  institutional: { num: "04", short: "Institutional", label: "Institutional Sexual Abuse",            icon: "landmark",     color: "#E76BA0", reportUnit: "documented incidents and articles" },
 }
 
 export const MODULE_ORDER: ModuleKey[] = ["pharma", "device", "consumer", "institutional"]

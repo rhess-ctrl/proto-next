@@ -1,5 +1,5 @@
-import { bandColor } from "@/lib/band-color"
 import { MODULES, type Opportunity } from "@/lib/opportunities"
+import { velocityColor, velocityTier } from "@/lib/velocity"
 import { Spark } from "./spark"
 import { VelocityPill } from "./velocity-pill"
 import { SolvencyChip } from "./solvency-chip"
@@ -110,7 +110,7 @@ export function EvidenceLayer({ opp, mode = "internal" }: EvidenceLayerProps) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 20px" }}>
           <SubBar label="Disproportionality" score={opp.sub.disproportionality} infoKey="disproportionality" module={opp.module} />
           <SubBar label="Volume"             score={opp.sub.volume}             infoKey="volume"             module={opp.module} />
-          <SubBar label="Severity"           score={opp.sub.severity}           infoKey="severity"           module={opp.module} />
+          <SubBar label="Severity"           score={parseInt(opp.severityRate, 10)} infoKey="severity"           module={opp.module} />
           <SubBar label="Velocity"           score={opp.sub.velocity}           infoKey="velocity"           module={opp.module} />
         </div>
       </div>
@@ -140,9 +140,23 @@ export function EvidenceLayer({ opp, mode = "internal" }: EvidenceLayerProps) {
             >
               Velocity · 90-day trend
             </span>
-            <VelocityPill pct={opp.velocity.pct} />
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span
+                style={{
+                  fontFamily: "var(--font-dm-mono)",
+                  fontSize: "9.5px",
+                  letterSpacing: "1px",
+                  textTransform: "uppercase",
+                  fontWeight: 500,
+                  color: velocityColor(opp.velocity.pct),
+                }}
+              >
+                {velocityTier(opp.velocity.pct).word}
+              </span>
+              <VelocityPill pct={opp.velocity.pct} />
+            </span>
           </div>
-          <Spark series={opp.velocity.series} w={220} h={40} fill color={bandColor(opp.score)} />
+          <Spark series={opp.velocity.series} w={220} h={40} fill color={velocityColor(opp.velocity.pct)} />
         </Well>
 
         {/* Volume + solvency row */}

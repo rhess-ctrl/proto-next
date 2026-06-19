@@ -14,9 +14,9 @@ type ModuleBadgeProps = {
 }
 
 const SIZE_MAP = {
-  sm: { tile: 18, icon: 11, font: "9.5px" },
-  md: { tile: 22, icon: 12, font: "10px"  },
-  lg: { tile: 26, icon: 15, font: "10px"  },
+  sm: { tile: 18, icon: 11, font: "10.5px" },
+  md: { tile: 22, icon: 12, font: "11.5px"  },
+  lg: { tile: 26, icon: 15, font: "11.5px"  },
 }
 
 export function ModuleBadge({ module, size = "md" }: ModuleBadgeProps) {
@@ -46,7 +46,7 @@ export function ModuleBadge({ module, size = "md" }: ModuleBadgeProps) {
           fontFamily: "var(--font-dm-mono)",
           fontSize: font,
           fontWeight: 500,
-          letterSpacing: "1.2px",
+          letterSpacing: "1.1px",
           textTransform: "uppercase",
           color: "var(--text-muted-hi)",
         }}

@@ -10,3 +10,11 @@ export function scoreBand(score: number): ScoreBand {
 export function bandColor(score: number): string {
   return `var(--score-${scoreBand(score)})`
 }
+
+export function bandWord(score: number): string {
+  const band = scoreBand(score)
+  if (band === "strong")   return "Strong"
+  if (band === "good")     return "Solid"
+  if (band === "moderate") return "Moderate"
+  return "Weak"
+}

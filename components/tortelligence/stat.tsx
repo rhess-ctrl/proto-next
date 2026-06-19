@@ -11,10 +11,12 @@ export function Stat({ label, value, color = "#fff", align = "right" }: StatProp
       <div
         style={{
           fontFamily: "var(--font-dm-mono)",
-          fontSize: 10,
+          fontSize: 11,
+          fontWeight: 500,
           letterSpacing: "1.2px",
           textTransform: "uppercase",
-          color: "var(--text-faint)",
+          color: "rgba(255,255,255,0.62)",
+          whiteSpace: "nowrap",
         }}
       >
         {label}

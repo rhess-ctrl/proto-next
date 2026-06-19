@@ -66,7 +66,7 @@ function Tab({ s, active, onSelect }: { s: SurfaceDef; active: Surface; onSelect
             fontFamily: "var(--font-dm-mono)",
             fontSize: 10,
             letterSpacing: "0.6px",
-            color: "var(--text-faint)",
+            color: "rgba(255,255,255,0.62)",
             marginTop: 2,
           }}
         >
@@ -121,7 +121,8 @@ export function SurfaceSwitcher() {
             fontSize: 10,
             letterSpacing: "1.4px",
             textTransform: "uppercase",
-            color: "var(--text-faint)",
+            fontWeight: 500,
+          color: "rgba(255,255,255,0.62)",
           }}
         >
           Homepage surfaces
@@ -136,7 +137,8 @@ export function SurfaceSwitcher() {
             fontSize: 10,
             letterSpacing: "1.5px",
             textTransform: "uppercase",
-            color: "var(--text-faint)",
+            fontWeight: 500,
+            color: "rgba(255,255,255,0.62)",
             marginRight: 4,
           }}
         >
@@ -164,7 +166,8 @@ export function SurfaceSwitcher() {
             fontSize: 10,
             letterSpacing: "1.5px",
             textTransform: "uppercase",
-            color: "var(--text-faint)",
+            fontWeight: 500,
+            color: "rgba(255,255,255,0.62)",
             marginRight: 4,
           }}
         >
@@ -202,7 +205,8 @@ export function SurfaceSwitcher() {
               fontSize: 10,
               letterSpacing: "0.8px",
               textTransform: "uppercase",
-              color: "var(--text-muted)",
+              fontWeight: 500,
+              color: "rgba(255,255,255,0.72)",
               whiteSpace: "nowrap",
             }}
           >
@@ -244,7 +248,7 @@ export function SurfaceSwitcher() {
               style={{
                 fontFamily: "var(--font-dm-mono)",
                 fontSize: 10,
-                color: "var(--text-faint)",
+                color: "rgba(255,255,255,0.62)",
                 letterSpacing: "0.5px",
               }}
             >

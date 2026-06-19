@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { useOpportunityView } from "@/hooks/use-opportunity-view"
 import { MODULES } from "@/lib/opportunities"
 import { OppCard } from "./opp-card"
+import { ScaleLegend } from "./scale-legend"
 
 export function ClientView() {
   const { filtered, expandedId, query, toggleExpanded, setQuery } = useOpportunityView("pharma")
@@ -25,11 +26,11 @@ export function ClientView() {
         style={{
           borderBottom: "1px solid var(--rule)",
           background: "rgba(0,10,24,0.5)",
-          padding: "18px 40px 0",
+          padding: "18px 24px 0",
           flexShrink: 0,
         }}
       >
-        <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto" }}>
 
           {/* Top nav row */}
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -66,7 +67,8 @@ export function ClientView() {
                 fontSize: 10,
                 letterSpacing: "1.4px",
                 textTransform: "uppercase",
-                color: "var(--text-faint)",
+                fontWeight: 500,
+                color: "rgba(255,255,255,0.62)",
                 borderLeft: "1px solid var(--rule-hi)",
                 paddingLeft: 14,
               }}
@@ -85,7 +87,7 @@ export function ClientView() {
                     left: 11,
                     top: "50%",
                     transform: "translateY(-50%)",
-                    color: "var(--text-faint)",
+                    color: "rgba(255,255,255,0.62)",
                     pointerEvents: "none",
                   }}
                 />
@@ -185,9 +187,10 @@ export function ClientView() {
                 style={{
                   fontFamily: "var(--font-dm-mono)",
                   fontSize: 10,
+                  fontWeight: 500,
                   letterSpacing: "1.2px",
                   textTransform: "uppercase",
-                  color: "var(--text-faint)",
+                  color: "rgba(255,255,255,0.62)",
                 }}
               >
                 Active opportunities
@@ -209,9 +212,9 @@ export function ClientView() {
 
       {/* Scrollable content */}
       <div
-        style={{ flex: 1, overflowY: "auto", padding: "24px 40px 40px", minHeight: 0 }}
+        style={{ flex: 1, overflowY: "auto", padding: "20px 24px 36px", minHeight: 0 }}
       >
-        <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto" }}>
           <p
             style={{
               fontSize: 13,
@@ -226,13 +229,17 @@ export function ClientView() {
             severity rate and 90-day velocity. Click any opportunity to review the record.
           </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-            {filtered.map((opp) => (
+          <ScaleLegend />
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+            {filtered.map((opp, i) => (
               <OppCard
                 key={opp.id}
                 opp={opp}
-                density="feature"
+                rank={i + 1}
+                density="comfortable"
                 mode="client"
+                showModule={false}
                 expanded={expandedId === opp.id}
                 onToggle={() => toggleExpanded(opp.id)}
               />

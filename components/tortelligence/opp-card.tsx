@@ -1,9 +1,9 @@
 "use client"
 
 import { ChevronRight } from "lucide-react"
-import { bandColor } from "@/lib/band-color"
+import { bandColor, bandWord } from "@/lib/band-color"
+import { velocityColor } from "@/lib/velocity"
 import { MODULES, type Opportunity } from "@/lib/opportunities"
-import { ScoreNumber } from "./score-number"
 import { ScoreBadge } from "./score-badge"
 import { ModuleBadge } from "./module-badge"
 import { VelocityPill } from "./velocity-pill"
@@ -42,10 +42,18 @@ export function OppCard({
   showModule = true,
 }: OppCardProps) {
   const m = MODULES[opp.module]
-  const accent = bandColor(opp.score)
   const solvency = opp.solvency
+  const velColor = velocityColor(opp.velocity.pct)
 
-  const border = expanded ? `1px solid ${m.color}80` : "1px solid var(--rule-hi)"
+  const sideColor = expanded ? `${m.color}80` : "var(--rule-hi)"
+  const borderProps: React.CSSProperties = {
+    borderStyle: "solid",
+    borderWidth: "1px",
+    borderTopColor: m.color,
+    borderRightColor: sideColor,
+    borderBottomColor: sideColor,
+    borderLeftColor: sideColor,
+  }
   const shadow = expanded
     ? `0 0 0 1px ${m.color}40, var(--shadow-md)`
     : "var(--shadow-sm)"
@@ -65,25 +73,29 @@ export function OppCard({
     </span>
   )
 
-  const accentBar = (
-    <div
+  const scorePill = (
+    <span
       style={{
-        position: "absolute",
-        left: 0,
-        top: 0,
-        bottom: 0,
-        width: 3,
-        background: accent,
+        fontFamily: "var(--font-dm-mono)",
+        fontSize: 11,
+        letterSpacing: "1.4px",
+        textTransform: "uppercase",
+        fontWeight: 500,
+        color: bandColor(opp.score),
       }}
-    />
+    >
+      {bandWord(opp.score)}
+    </span>
   )
 
   if (density === "feature") {
     return (
-      <div onClick={onToggle} style={{ ...cardBase, border, boxShadow: shadow, padding: "20px 22px" }}>
-        {accentBar}
+      <div onClick={onToggle} style={{ ...cardBase, ...borderProps, boxShadow: shadow, padding: "20px 22px" }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 18 }}>
-          <ScoreBadge score={opp.score} size="lg" />
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <ScoreBadge score={opp.score} size="lg" showLabel={false} />
+            {scorePill}
+          </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <ModuleBadge module={opp.module} />
             <div
@@ -120,7 +132,7 @@ export function OppCard({
             <SolvencyChip variant="card" state={solvency} />
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <VelocityPill pct={opp.velocity.pct} />
-              <Spark series={opp.velocity.series} w={56} h={22} />
+              <Spark series={opp.velocity.series} w={56} h={22} color={velColor} />
             </div>
           </div>
         </div>
@@ -131,8 +143,7 @@ export function OppCard({
 
   // comfortable (feed row)
   return (
-    <div onClick={onToggle} style={{ ...cardBase, border, boxShadow: shadow, padding: "15px 18px 15px 20px" }}>
-      {accentBar}
+    <div onClick={onToggle} style={{ ...cardBase, ...borderProps, boxShadow: shadow, padding: "15px 18px 15px 20px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
         {rank !== undefined && (
           <span
@@ -148,7 +159,10 @@ export function OppCard({
             {rank}
           </span>
         )}
-        <ScoreNumber score={opp.score} size={40} />
+        <div style={{ display: "flex", alignItems: "center", gap: 11, flexShrink: 0 }}>
+          <ScoreBadge score={opp.score} size="md" showLabel={false} />
+          {scorePill}
+        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           {showModule && (
             <div style={{ marginBottom: 7 }}>
@@ -208,7 +222,7 @@ export function OppCard({
               }}
             >
               <VelocityPill pct={opp.velocity.pct} />
-              <Spark series={opp.velocity.series} w={44} h={18} />
+              <Spark series={opp.velocity.series} w={44} h={18} color={velColor} />
             </div>
           </div>
           {chevron}

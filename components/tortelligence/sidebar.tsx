@@ -39,9 +39,10 @@ export function Sidebar() {
             style={{
               fontFamily: "var(--font-dm-mono)",
               fontSize: 10,
+              fontWeight: 500,
               letterSpacing: "2px",
               textTransform: "uppercase",
-              color: "var(--text-faint)",
+              color: "rgba(255,255,255,0.62)",
               marginTop: 4,
             }}
           >
@@ -121,7 +122,7 @@ export function Sidebar() {
               fontFamily: "var(--font-open-sans)",
               fontSize: 10,
               marginTop: 5,
-              color: "var(--text-faint)",
+              color: "rgba(255,255,255,0.62)",
             }}
           >
             Account &amp; status area

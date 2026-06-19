@@ -271,7 +271,7 @@
   <div class="divider"></div>
   <div>
     <div class="page-title">Architecture Assessment</div>
-    <div class="eyebrow">mockup-v1 · vs. ADR-00X &amp; TS-00X · revised 2026-06-19</div>
+    <div class="eyebrow">mockup-v1 · post v3 component update · vs. ADR-00X &amp; TS-00X · revised 2026-06-19</div>
   </div>
 </div>
 
@@ -288,16 +288,16 @@
   </div>
   <div class="verdict-sep"></div>
   <div class="verdict-item">
-    <span class="verdict-label">Resolved Since v1</span>
-    <span class="verdict-value pass">1</span>
+    <span class="verdict-label">Resolved</span>
+    <span class="verdict-value pass">4</span>
   </div>
   <div class="verdict-item">
     <span class="verdict-label">High Severity Gaps</span>
-    <span class="verdict-value critical">4</span>
+    <span class="verdict-value critical">2</span>
   </div>
   <div class="verdict-item">
     <span class="verdict-label">Medium Severity Gaps</span>
-    <span class="verdict-value warn">3</span>
+    <span class="verdict-value warn">2</span>
   </div>
   <div class="verdict-item">
     <span class="verdict-label">Low / Minor</span>
@@ -345,13 +345,13 @@
           </tr>
           <tr>
             <td class="area">API / BFF layer</td>
-            <td>ADR mandates Route Handlers for client data access; none exist for opportunity data</td>
-            <td><span class="chip chip-red">High</span></td>
+            <td><code>app/api/opportunities/route.ts</code> implemented — queries Firestore, returns shaped JSON; store fetches via <code>fetch("/api/opportunities")</code></td>
+            <td><span class="chip chip-green">Resolved</span></td>
           </tr>
           <tr>
             <td class="area">Data layer</td>
-            <td>All opportunity data is hardcoded TS constants; Firestore is bypassed</td>
-            <td><span class="chip chip-red">High</span></td>
+            <td>125 opportunities generated and seeded to Firestore; store loads live data on first render with loading state tracked</td>
+            <td><span class="chip chip-green">Resolved</span></td>
           </tr>
           <tr>
             <td class="area">ClientView module</td>
@@ -360,8 +360,8 @@
           </tr>
           <tr>
             <td class="area">Solvency data model</td>
-            <td><code>SOLVENCY_STATE</code> is a detached map by ID; should be a field on <code>Opportunity</code></td>
-            <td><span class="chip chip-gold">Medium</span></td>
+            <td><code>solvency: SolvencyState</code> is now a typed field on <code>Opportunity</code>; components use <code>opp.solvency</code> directly — detached map removed</td>
+            <td><span class="chip chip-green">Resolved</span></td>
           </tr>
           <tr>
             <td class="area">Cross-surface query state</td>
@@ -456,62 +456,53 @@
   <div class="section">
     <div class="section-head">
       <span class="section-num">02b</span>
-      <h2>API / BFF Layer — Not Implemented</h2>
+      <h2>API / BFF Layer — Resolved</h2>
       <div class="rule"></div>
-      <span class="chip chip-red">High</span>
+      <span class="chip chip-green">Resolved</span>
     </div>
 
-    <div class="finding high">
+    <div class="finding pass">
       <div class="finding-head">
-        <span class="finding-title">ADR mandates Route Handlers; none exist for opportunity data</span>
+        <span class="finding-title">Route Handler implemented; store fetches live Firestore data</span>
       </div>
-      <p>The updated ADR-00X now defines a BFF pattern: <strong>client components must access data through Next.js Route Handlers</strong>, never by reaching backend services directly. Route Handlers own credentials, data transformation, and the stable UI contract.</p>
-      <p>The current implementation has no Route Handlers for opportunity data. The only existing Route Handler is <code>app/api/items/route.ts</code>, which serves the original Firestore <code>items</code> collection and is unrelated to the Tortelligence UI. All opportunity data still comes from hardcoded constants imported at module load time — which also means the data layer gap (Section 03) and the BFF gap are the same problem seen from two angles.</p>
-      <p>Closing both gaps means: create a Route Handler (e.g. <code>app/api/opportunities/route.ts</code>) that reads from Firestore and returns UI-shaped opportunity records; have server components call it on page load, and client components call it for post-hydration fetches. The static <code>OPPORTUNITIES</code> constant in <code>lib/opportunities.ts</code> becomes the seed/fallback only.</p>
+      <p><code>app/api/opportunities/route.ts</code> is now implemented and follows the ADR BFF contract correctly. It uses the Admin SDK via <code>lib/firestore.ts</code>, orders by score descending, casts to the <code>Opportunity</code> type, and returns a JSON array. The <code>force-dynamic</code> export prevents build-time static generation, consistent with the project's Firestore gotcha.</p>
+      <p>The <code>loadOpportunities</code> action in <code>store/opportunity-store.ts</code> calls <code>fetch("/api/opportunities")</code>, guards against double-loading, and tracks a <code>loading: boolean</code> flag in store state. The hook triggers the load on first render via <code>useEffect</code>. Client components never reach Firestore directly — the ADR constraint is satisfied.</p>
+      <p>125 opportunities are generated by <code>scripts/opportunity-generator.ts</code> (seeded PRNG, deterministic) and written to Firestore via <code>pnpm seed</code>. The static <code>_LEGACY</code> array in <code>lib/opportunities.ts</code> is retained for reference only and suppressed with a <code>void</code> statement — it is not imported anywhere in the application.</p>
     </div>
   </div>
 
-  <!-- ── Section 3: Mock Data ────────────────────────────────────────────── -->
+  <!-- ── Section 3: Data Layer ──────────────────────────────────────────── -->
   <div class="section">
     <div class="section-head">
       <span class="section-num">03</span>
-      <h2>Mock Data — Where It Comes From</h2>
+      <h2>Data Layer — Mostly Resolved</h2>
       <div class="rule"></div>
-      <span class="chip chip-red">High</span>
+      <span class="chip chip-green">Largely Resolved</span>
+      <span class="chip chip-red" style="margin-left:6px">1 Gap Remains</span>
+    </div>
+
+    <div class="finding pass">
+      <div class="finding-head">
+        <span class="finding-title">Live Firestore data pipeline is wired end-to-end</span>
+      </div>
+      <p>The hardcoded constants are gone from the active data path. <code>store/opportunity-store.ts</code> initializes with an empty <code>opportunities: []</code> array and fetches from <code>/api/opportunities</code> via <code>loadOpportunities()</code> on first render. A <code>loading: boolean</code> flag drives the loading skeleton in <code>SummaryFeed</code>. The store guards against concurrent fetches (<code>if loading || length > 0 return</code>). All 125 generated opportunities now flow from Firestore through the BFF to the UI.</p>
+      <p>The solvency model is also fixed. <code>solvency: SolvencyState</code> is a typed field on <code>Opportunity</code>, populated by the generator and stored in Firestore. Components access <code>opp.solvency</code> directly — no detached parallel map.</p>
     </div>
 
     <div class="finding high">
       <div class="finding-head">
-        <span class="finding-title">All data is hardcoded TypeScript constants</span>
+        <span class="finding-title">ClientView hard-codes the pharma module</span>
+        <span class="chip chip-red">High</span>
       </div>
-      <p>Every opportunity, module definition, and solvency value lives in <code>lib/opportunities.ts</code> as static exports imported directly into <code>useOpportunityView</code> at module load time. No fetch, no server action, no Firestore.</p>
-<pre><span class="c">// lib/opportunities.ts — the entire data layer right now</span>
-<span class="k">export const</span> <span class="t">OPPORTUNITIES</span>: Opportunity[] = [
-  { id: <span class="s">"TG-2588"</span>, module: <span class="s">"pharma"</span>, label: <span class="s">"Harmful Drug A"</span>, score: 91, ... },
-  <span class="c">// 11 more static records</span>
-]</pre>
-      <p>The existing Firestore infrastructure — <code>lib/firestore.ts</code>, <code>lib/items.ts</code>, the <code>getItems()</code> function — is <strong>completely bypassed</strong> by the Tortelligence UI. It was the foundation of the original proto-next and is now dead code relative to this feature.</p>
-      <p>Since <code>OPPORTUNITIES</code> is a static import consumed by a <code>"use client"</code> hook, the full dataset ships in the browser JS bundle. For 12 records this is harmless; for a real portfolio with hundreds of cases it's the wrong architecture.</p>
+      <p><code>client-view.tsx</code> line 10: <code>useOpportunityView("pharma")</code>. The subscribed module is still a literal in the component, not data-driven. In production this comes from the client record — which law firm is subscribed to which module. The fix is to pass the module as a prop from the route or from a client context record fetched at page load.</p>
     </div>
 
-    <div class="finding high">
+    <div class="finding low">
       <div class="finding-head">
-        <span class="finding-title">Three specific data model issues</span>
+        <span class="finding-title">Error state not surfaced to the UI</span>
+        <span class="chip chip-cyan">Low</span>
       </div>
-      <ul class="sub-list">
-        <li>
-          <span class="bullet">A.</span>
-          <span><strong>SOLVENCY_STATE is a detached parallel map.</strong> Every component that needs solvency calls <code>SOLVENCY_STATE[opp.id] ?? "Unknown"</code>. It should be <code>opp.solvency</code> — a typed field on <code>Opportunity</code>. The current approach couples two separate data structures by a shared string key with no enforcement.</span>
-        </li>
-        <li>
-          <span class="bullet">B.</span>
-          <span><strong>ClientView hard-codes the pharma module.</strong> Line 10 of <code>client-view.tsx</code>: <code>useOpportunityView("pharma")</code>. The client's subscribed module is a literal in the component, not data-driven. In production this comes from the client record (which law firm subscribed to which module).</span>
-        </li>
-        <li>
-          <span class="bullet">C.</span>
-          <span><strong>No async loading or error states.</strong> The architecture has no provision for async data — no loading skeleton, no error boundary, no empty state for a real fetch that returns zero results.</span>
-        </li>
-      </ul>
+      <p>The <code>loadOpportunities</code> catch block logs to console and resets <code>loading: false</code>, but there is no <code>error</code> field in store state and no error UI. If the <code>/api/opportunities</code> fetch fails, the app silently shows an empty feed. Adding an <code>error: string | null</code> to the store and a minimal error state in <code>SummaryFeed</code> would close this.</p>
     </div>
   </div>
 
@@ -587,6 +578,10 @@
         <span class="pass-mark">✓</span>
         <span class="pass-text"><strong>shadcn/ui Input in ClientView</strong> — <code>value</code> is wired to external <code>query</code> state, <code>onChange</code> calls <code>setQuery</code>. Correctly externally controlled per the standard.</span>
       </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>ScaleLegend collapsible state</strong> — <code>scale-legend.tsx</code> uses <code>useState</code> for open/closed. This is an approved local-state exception: it is a UI implementation detail, not observable outside the component, and carries no business meaning. Consistent with the InfoDot tooltip precedent.</span>
+      </div>
     </div>
 
     <div style="margin-top: 12px;">
@@ -644,9 +639,9 @@ style={{ <span class="t">fontFamily</span>: <span class="s">"var(--font-dm-mono)
       </div>
       <div class="finding low">
         <div class="finding-head">
-          <span class="finding-title">Original Firestore data path</span>
+          <span class="finding-title">Original items data path (partially active)</span>
         </div>
-        <p><code>lib/firestore.ts</code>, <code>lib/items.ts</code>, and the <code>getItems()</code> function still exist from proto-next's original Firestore-backed home page. They are not called by anything in the Tortelligence UI. When the real data layer is built, these may become the foundation — but right now they're disconnected and should be treated as such.</p>
+        <p><code>lib/firestore.ts</code> is now live — it is imported by <code>app/api/opportunities/route.ts</code> and is the correct foundation for the BFF. <code>lib/items.ts</code> and the <code>getItems()</code> function remain from proto-next's original home page and are unused by the Tortelligence UI, but are low priority to remove given <code>lib/firestore.ts</code> is now actively used.</p>
       </div>
     </div>
   </div>
@@ -680,6 +675,18 @@ style={{ <span class="t">fontFamily</span>: <span class="s">"var(--font-dm-mono)
       <div class="pass-item">
         <span class="pass-mark">✓</span>
         <span class="pass-text"><strong>ClientView and SummaryFeed share one hook correctly.</strong> <code>useOpportunityView</code> accepts an optional module pin — SummaryFeed passes none, ClientView passes <code>"pharma"</code> — without duplicating filter logic.</span>
+      </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>BFF layer follows ADR contract.</strong> <code>app/api/opportunities/route.ts</code> holds credentials server-side, shapes data into the UI contract, and returns a typed payload. Client components never touch Firestore directly.</span>
+      </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>Data model is clean.</strong> <code>solvency</code> is a typed field on <code>Opportunity</code>, <code>velocity</code> carries both <code>pct</code> and <code>series</code>, and <code>sub</code> holds the four sub-scores. The generator and seed pipeline produce deterministic, realistic records without touching UI code.</span>
+      </div>
+      <div class="pass-item">
+        <span class="pass-mark">✓</span>
+        <span class="pass-text"><strong>Double-fetch guard in store.</strong> <code>loadOpportunities</code> checks <code>loading || opportunities.length > 0</code> before fetching — no redundant network calls even when multiple components trigger the hook simultaneously.</span>
       </div>
     </div>
   </div>

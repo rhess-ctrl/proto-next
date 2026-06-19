@@ -3,6 +3,7 @@ import { bandColor, scoreBand } from "@/lib/band-color"
 type ScoreBadgeProps = {
   score: number
   size?: "sm" | "md" | "lg"
+  showLabel?: boolean
 }
 
 const DIM_COLOR: Record<string, string> = {
@@ -25,7 +26,7 @@ const SIZE_MAP = {
   lg: { outer: 64, font: 30, label: 10 },
 }
 
-export function ScoreBadge({ score, size = "md" }: ScoreBadgeProps) {
+export function ScoreBadge({ score, size = "md", showLabel = true }: ScoreBadgeProps) {
   const band = scoreBand(score)
   const color = bandColor(score)
   const dim = DIM_COLOR[band]
@@ -55,18 +56,20 @@ export function ScoreBadge({ score, size = "md" }: ScoreBadgeProps) {
       >
         {score}
       </span>
-      <span
-        style={{
-          fontFamily: "var(--font-dm-mono)",
-          fontSize: label,
-          letterSpacing: "1.2px",
-          textTransform: "uppercase",
-          color: "var(--text-faint)",
-          marginTop: 3,
-        }}
-      >
-        Score
-      </span>
+      {showLabel && (
+        <span
+          style={{
+            fontFamily: "var(--font-dm-mono)",
+            fontSize: label,
+            letterSpacing: "1.2px",
+            textTransform: "uppercase",
+            color: "var(--text-faint)",
+            marginTop: 3,
+          }}
+        >
+          Score
+        </span>
+      )}
     </div>
   )
 }

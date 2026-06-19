@@ -19,9 +19,10 @@ export function SubBar({ label, score, infoKey, module }: SubBarProps) {
           style={{
             fontFamily: "var(--font-dm-mono)",
             fontSize: 10,
+            fontWeight: 500,
             letterSpacing: "1.1px",
             textTransform: "uppercase",
-            color: "var(--text-muted)",
+            color: "rgba(255,255,255,0.72)",
           }}
         >
           {label}

@@ -1,6 +1,7 @@
 "use client"
 
-import { bandColor } from "@/lib/band-color"
+import { bandColor, bandWord } from "@/lib/band-color"
+import { velocityColor } from "@/lib/velocity"
 import { MODULES, type ModuleKey } from "@/lib/opportunities"
 import { Spark } from "./spark"
 import { VelocityPill } from "./velocity-pill"
@@ -80,7 +81,7 @@ export function SummaryTile({ module, active, onClick, topScore, count, avgVeloc
           <div
             style={{
               fontFamily: "var(--font-oswald)",
-              fontSize: 13,
+              fontSize: 15,
               fontWeight: 600,
               letterSpacing: "0.3px",
               textTransform: "uppercase",
@@ -104,9 +105,10 @@ export function SummaryTile({ module, active, onClick, topScore, count, avgVeloc
             style={{
               fontFamily: "var(--font-dm-mono)",
               fontSize: 10,
+              fontWeight: 500,
               letterSpacing: "1.2px",
               textTransform: "uppercase",
-              color: "var(--text-faint)",
+              color: "rgba(255,255,255,0.85)",
             }}
           >
             Top score
@@ -122,9 +124,24 @@ export function SummaryTile({ module, active, onClick, topScore, count, avgVeloc
           >
             {topScore > 0 ? topScore : "—"}
           </div>
+          {topScore > 0 && (
+            <div
+              style={{
+                fontFamily: "var(--font-dm-mono)",
+                fontSize: 10,
+                letterSpacing: "1.2px",
+                textTransform: "uppercase",
+                fontWeight: 500,
+                color: bandColor(topScore),
+                marginTop: 5,
+              }}
+            >
+              {bandWord(topScore)}
+            </div>
+          )}
         </div>
         <div style={{ textAlign: "right" }}>
-          <Spark series={topSeries} w={74} h={26} fill color={meta.color} />
+          <Spark series={topSeries} w={74} h={26} fill color={avgVelocity > 0 ? velocityColor(avgVelocity) : meta.color} />
           <div
             style={{
               display: "flex",
@@ -138,13 +155,14 @@ export function SummaryTile({ module, active, onClick, topScore, count, avgVeloc
             <span
               style={{
                 fontFamily: "var(--font-dm-mono)",
-                fontSize: 10,
-                color: "var(--text-faint)",
+                fontSize: 11,
+                fontWeight: 500,
+                color: "rgba(255,255,255,0.85)",
               }}
             >
               {count} opps
             </span>
-            {avgVelocity > 0 && <VelocityPill pct={avgVelocity} />}
+            {avgVelocity > 0 && <VelocityPill pct={avgVelocity} size={13} />}
           </div>
         </div>
       </div>

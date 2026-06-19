@@ -24,10 +24,11 @@ export function SolvencyChip({ state, variant = "card" }: SolvencyChipProps) {
         <div
           style={{
             fontFamily: "var(--font-dm-mono)",
-            fontSize: 10,
+            fontSize: 11,
+            fontWeight: 500,
             letterSpacing: "1.2px",
             textTransform: "uppercase",
-            color: "var(--text-faint)",
+            color: "rgba(255,255,255,0.62)",
           }}
         >
           Solvency
@@ -36,7 +37,7 @@ export function SolvencyChip({ state, variant = "card" }: SolvencyChipProps) {
           <span
             style={{
               fontFamily: "var(--font-dm-mono)",
-              fontSize: 11,
+              fontSize: 12,
               color,
               border: "1px dashed var(--rule-strong)",
               borderRadius: "var(--radius-sm)",
@@ -66,9 +67,10 @@ export function SolvencyChip({ state, variant = "card" }: SolvencyChipProps) {
           style={{
             fontFamily: "var(--font-dm-mono)",
             fontSize: 10,
+            fontWeight: 500,
             letterSpacing: "1.2px",
             textTransform: "uppercase",
-            color: "var(--text-muted)",
+            color: "rgba(255,255,255,0.72)",
           }}
         >
           Defendant solvency
@@ -92,7 +94,7 @@ export function SolvencyChip({ state, variant = "card" }: SolvencyChipProps) {
       <div style={{ fontFamily: "var(--font-dm-mono)", fontSize: 24, color, marginTop: 8 }}>
         {state}
       </div>
-      <div style={{ fontSize: 10.5, color: "var(--text-faint)", marginTop: 4 }}>
+      <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.62)", marginTop: 4 }}>
         Not yet live — illustrative preview.
       </div>
     </div>

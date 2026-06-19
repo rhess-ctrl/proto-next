@@ -45,7 +45,7 @@ export function TopBar({ title, sub, count }: TopBarProps) {
             fontFamily: "var(--font-dm-mono)",
             fontSize: 10,
             letterSpacing: "0.8px",
-            color: "var(--text-muted)",
+            color: "rgba(255,255,255,0.72)",
             marginTop: 6,
           }}
         >
@@ -63,7 +63,7 @@ export function TopBar({ title, sub, count }: TopBarProps) {
             left: 11,
             top: "50%",
             transform: "translateY(-50%)",
-            color: "var(--text-faint)",
+            color: "rgba(255,255,255,0.62)",
             pointerEvents: "none",
           }}
         />
@@ -92,7 +92,7 @@ export function TopBar({ title, sub, count }: TopBarProps) {
               fontFamily: "var(--font-dm-mono)",
               fontSize: 10.5,
               letterSpacing: "0.5px",
-              color: "var(--text-muted)",
+              color: "rgba(255,255,255,0.72)",
             }}
           >
             <span style={{ color: "var(--cyan-400)" }}>{count}</span> ranked

@@ -5,6 +5,7 @@ import { MODULE_ORDER, MODULES, type ModuleKey, type Opportunity } from "@/lib/o
 import { TopBar } from "./top-bar"
 import { SummaryTile } from "./summary-tile"
 import { OppCard } from "./opp-card"
+import { ScaleLegend } from "./scale-legend"
 
 function moduleStats(opportunities: Opportunity[], module: ModuleKey) {
   const list = opportunities.filter((o) => o.module === module).sort((a, b) => b.score - a.score)
@@ -36,10 +37,11 @@ export function SummaryFeed() {
             <span
               style={{
                 fontFamily: "var(--font-dm-mono)",
-                fontSize: 10,
-                letterSpacing: "1.8px",
+                fontSize: 13,
+                fontWeight: 500,
+                letterSpacing: "1.2px",
                 textTransform: "uppercase",
-                color: "var(--cyan-400)",
+                color: "#fff",
               }}
             >
               Module status
@@ -52,9 +54,10 @@ export function SummaryFeed() {
                   cursor: "pointer",
                   fontFamily: "var(--font-dm-mono)",
                   fontSize: 10,
+                  fontWeight: 500,
                   letterSpacing: "1px",
                   textTransform: "uppercase",
-                  color: "var(--text-muted)",
+                  color: "rgba(255,255,255,0.72)",
                   background: "transparent",
                   border: "1px solid var(--rule-hi)",
                   borderRadius: "var(--radius-sm)",
@@ -92,15 +95,18 @@ export function SummaryFeed() {
             })}
           </div>
 
+          <ScaleLegend />
+
           {/* Feed section header */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
             <span
               style={{
                 fontFamily: "var(--font-dm-mono)",
-                fontSize: 10,
-                letterSpacing: "1.8px",
+                fontSize: 13,
+                fontWeight: 500,
+                letterSpacing: "1.2px",
                 textTransform: "uppercase",
-                color: "var(--cyan-400)",
+                color: "#fff",
               }}
             >
               {activeModule ? MODULES[activeModule as ModuleKey].label : "All opportunities"} · ranked
@@ -110,7 +116,7 @@ export function SummaryFeed() {
               style={{
                 fontFamily: "var(--font-dm-mono)",
                 fontSize: 10,
-                color: "var(--text-faint)",
+                color: "rgba(255,255,255,0.62)",
               }}
             >
               {filtered.length}
